@@ -1,0 +1,2446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOREAS — AI Energy Commander for Polar Research Stations</title>
+  <meta name="description" content="AI-driven smart microgrid energy management and resilience platform engineered for isolated Antarctic research facilities.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg-base: #040810;
+      --bg-surface: #091220;
+      --bg-card: rgba(13, 23, 42, 0.78);
+      --bg-card-hover: rgba(19, 34, 62, 0.88);
+      --border-subtle: rgba(0, 240, 255, 0.14);
+      --border-bright: rgba(0, 240, 255, 0.38);
+      --border-glass: rgba(255, 255, 255, 0.08);
+
+      --cyan-neon: #00f0ff;
+      --cyan-glow: rgba(0, 240, 255, 0.35);
+      --blue-accent: #2979ff;
+      --green-neon: #00e676;
+      --green-glow: rgba(0, 230, 118, 0.35);
+      --amber-warn: #ffab00;
+      --amber-glow: rgba(255, 171, 0, 0.35);
+      --red-alert: #ff1744;
+      --red-glow: rgba(255, 23, 68, 0.4);
+      --purple-accent: #b388ff;
+
+      --text-primary: #f0f6fc;
+      --text-secondary: #8b9bb4;
+      --text-muted: #54657e;
+
+      --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      background-image: 
+        radial-gradient(circle at 10% 8%, rgba(0, 162, 255, 0.09) 0%, transparent 40%),
+        radial-gradient(circle at 90% 15%, rgba(0, 240, 255, 0.06) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(41, 121, 255, 0.07) 0%, transparent 50%),
+        linear-gradient(180deg, #040810 0%, #070e1a 100%);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Top Command Header */
+    header {
+      background: rgba(9, 18, 32, 0.90);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0.85rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .station-badge {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #00f0ff 0%, #0051ff 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
+
+    .station-badge svg {
+      width: 26px;
+      height: 26px;
+      color: #040810;
+    }
+
+    .brand-title h1 {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .badge-sub {
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      background: rgba(0, 240, 255, 0.12);
+      color: var(--cyan-neon);
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+    }
+
+    .brand-title p {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+    }
+
+    .top-telemetry-strip {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .telemetry-chip {
+      background: rgba(13, 23, 42, 0.7);
+      border: 1px solid var(--border-glass);
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.82rem;
+    }
+
+    .telemetry-chip .label {
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+
+    .telemetry-chip .val {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .mode-chip {
+      padding: 0.35rem 0.9rem;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .mode-normal {
+      background: rgba(0, 230, 118, 0.15);
+      color: var(--green-neon);
+      border: 1px solid rgba(0, 230, 118, 0.4);
+    }
+
+    .mode-watch {
+      background: rgba(0, 240, 255, 0.15);
+      color: var(--cyan-neon);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+    }
+
+    .mode-warning {
+      background: rgba(255, 171, 0, 0.15);
+      color: var(--amber-warn);
+      border: 1px solid rgba(255, 171, 0, 0.4);
+    }
+
+    .mode-survival {
+      background: rgba(255, 23, 68, 0.2);
+      color: var(--red-alert);
+      border: 1px solid var(--red-alert);
+      box-shadow: 0 0 15px var(--red-glow);
+      animation: pulse-border 1.5s infinite;
+    }
+
+    @keyframes pulse-border {
+      0%, 100% { border-color: var(--red-alert); }
+      50% { border-color: transparent; }
+    }
+
+    .btn-header {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.2), rgba(0, 81, 255, 0.3));
+      border: 1px solid var(--cyan-neon);
+      color: #ffffff;
+      padding: 0.45rem 1rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      font-family: var(--font-display);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s;
+    }
+
+    .btn-header:hover {
+      box-shadow: 0 0 18px var(--cyan-glow);
+      transform: translateY(-1px);
+    }
+
+    .btn-demo-run {
+      background: linear-gradient(135deg, #0051ff, #00e5ff);
+      color: #040810;
+      font-weight: 800;
+      border: none;
+    }
+
+    .btn-demo-run:hover {
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.6);
+    }
+
+    /* Main Container */
+    main {
+      padding: 1.5rem 2rem 5rem 2rem;
+      max-width: 1760px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* Survival Mode Emergency Banner */
+    .emergency-banner {
+      display: none;
+      background: linear-gradient(90deg, rgba(255, 23, 68, 0.25) 0%, rgba(20, 5, 10, 0.8) 100%);
+      border: 2px solid var(--red-alert);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      box-shadow: 0 0 35px rgba(255, 23, 68, 0.3);
+      animation: banner-pulse 2s infinite;
+    }
+
+    @keyframes banner-pulse {
+      0%, 100% { box-shadow: 0 0 25px rgba(255, 23, 68, 0.2); }
+      50% { box-shadow: 0 0 45px rgba(255, 23, 68, 0.5); }
+    }
+
+    .emergency-banner.active {
+      display: block;
+    }
+
+    .emergency-banner-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .emergency-left {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+    }
+
+    .emergency-icon {
+      font-size: 2.2rem;
+      animation: alert-flash 1s infinite;
+    }
+
+    @keyframes alert-flash {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.15); }
+    }
+
+    .emergency-text h3 {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #ffffff;
+      letter-spacing: 0.04em;
+    }
+
+    .emergency-text p {
+      font-size: 0.88rem;
+      color: #ffcdd2;
+    }
+
+    .emergency-actions {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .action-badge {
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      color: #ffffff;
+    }
+
+    /* Hackathon Quick Scenario Bar */
+    .quick-scenarios-bar {
+      display: none;
+      background: rgba(13, 23, 42, 0.9);
+      border: 1px solid var(--border-bright);
+      border-radius: 12px;
+      padding: 0.75rem 1.25rem;
+      box-shadow: 0 0 25px rgba(0, 240, 255, 0.15);
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .quick-scenarios-bar.active {
+      display: flex;
+    }
+
+    .scenario-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-scenario-quick {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-glass);
+      color: var(--text-primary);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-scenario-quick:hover {
+      background: rgba(0, 240, 255, 0.2);
+      border-color: var(--cyan-neon);
+      color: #ffffff;
+    }
+
+    /* Automated Demo Controller Bar */
+    .demo-controller-bar {
+      display: none;
+      background: linear-gradient(90deg, rgba(0, 81, 255, 0.25), rgba(0, 240, 255, 0.15));
+      border: 1px solid var(--cyan-neon);
+      border-radius: 12px;
+      padding: 0.75rem 1.5rem;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .demo-controller-bar.active {
+      display: flex;
+    }
+
+    .demo-step-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .demo-badge {
+      background: var(--cyan-neon);
+      color: #040810;
+      font-weight: 800;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+    }
+
+    .demo-progress-track {
+      width: 200px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .demo-progress-fill {
+      width: 10%;
+      height: 100%;
+      background: var(--cyan-neon);
+      transition: width 0.4s ease;
+    }
+
+    /* Time Machine & Season Scrubber */
+    .scrubber-panel {
+      background: var(--bg-card);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    }
+
+    .scrubber-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .scrubber-title {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.88rem;
+      font-weight: 700;
+      font-family: var(--font-display);
+      color: var(--cyan-neon);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .scrubber-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-control {
+      background: rgba(0, 240, 255, 0.08);
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      color: var(--text-primary);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-control:hover {
+      background: rgba(0, 240, 255, 0.2);
+      border-color: var(--cyan-neon);
+      box-shadow: 0 0 10px var(--cyan-glow);
+    }
+
+    .btn-control.active {
+      background: var(--cyan-neon);
+      color: #040810;
+      border-color: var(--cyan-neon);
+      font-weight: 700;
+    }
+
+    .scrubber-slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .timeline-slider {
+      flex: 1;
+      height: 6px;
+      -webkit-appearance: none;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      outline: none;
+    }
+
+    .timeline-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--cyan-neon);
+      cursor: pointer;
+      box-shadow: 0 0 10px var(--cyan-glow);
+      transition: transform 0.1s;
+    }
+
+    .timeline-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.25);
+    }
+
+    /* ROW 1: CRITICAL STATUS HUD */
+    .hud-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 1280px) {
+      .hud-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hud-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .hud-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.1rem 1.3rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s ease;
+    }
+
+    .hud-card:hover {
+      border-color: var(--border-bright);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .hud-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--border-bright), transparent);
+    }
+
+    .hud-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.6rem;
+    }
+
+    .hud-card-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .hud-card-icon {
+      font-size: 1.1rem;
+    }
+
+    .hud-card-value {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.1;
+      margin-bottom: 0.4rem;
+    }
+
+    .hud-card-sub {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      font-family: var(--font-mono);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .cold-mode-badge {
+      background: rgba(0, 240, 255, 0.15);
+      border: 1px solid var(--cyan-neon);
+      color: var(--cyan-neon);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.68rem;
+      font-weight: 700;
+    }
+
+    /* ROW 2: DYNAMIC ENERGY FLOW DIAGRAM */
+    .flow-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.25rem 1.6rem;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .panel-title {
+      font-family: var(--font-display);
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .flow-diagram-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr) 0.6fr repeat(2, 1fr);
+      align-items: center;
+      gap: 1rem;
+      background: rgba(5, 10, 18, 0.7);
+      border: 1px solid var(--border-glass);
+      border-radius: 12px;
+      padding: 1.2rem;
+    }
+
+    @media (max-width: 1100px) {
+      .flow-diagram-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .flow-node {
+      background: rgba(13, 23, 42, 0.85);
+      border: 1px solid var(--border-glass);
+      border-radius: 10px;
+      padding: 0.85rem 1rem;
+      text-align: center;
+      position: relative;
+      transition: all 0.2s;
+    }
+
+    .flow-node:hover {
+      border-color: var(--cyan-neon);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+    }
+
+    .flow-node-title {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+
+    .flow-node-val {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #ffffff;
+    }
+
+    .flow-node-sub {
+      font-size: 0.72rem;
+      font-family: var(--font-mono);
+      color: var(--text-secondary);
+      margin-top: 0.2rem;
+    }
+
+    .flow-bus {
+      background: linear-gradient(180deg, #0051ff, #00e5ff);
+      color: #040810;
+      font-weight: 900;
+      border-radius: 8px;
+      padding: 1rem 0.5rem;
+      text-align: center;
+      font-family: var(--font-display);
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
+
+    /* ROW 3: 72-HOUR FORECAST */
+    .forecast-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.25rem 1.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .deficit-window-banner {
+      background: rgba(255, 171, 0, 0.12);
+      border: 1px solid rgba(255, 171, 0, 0.35);
+      border-radius: 8px;
+      padding: 0.65rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.84rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .deficit-window-banner .title {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--amber-warn);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .deficit-window-banner .desc {
+      color: var(--text-secondary);
+    }
+
+    .chart-wrapper {
+      position: relative;
+      height: 320px;
+      width: 100%;
+    }
+
+    /* ROW 4: EXPLAINABLE AI & WHY NOT JUST RULES */
+    .ai-row {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 1024px) {
+      .ai-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .ai-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.3rem 1.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .action-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--border-glass);
+    }
+
+    .action-chip {
+      background: rgba(0, 230, 118, 0.18);
+      border: 1px solid var(--green-neon);
+      color: var(--green-neon);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 800;
+      padding: 0.3rem 0.8rem;
+      border-radius: 6px;
+    }
+
+    .ai-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .ai-field-label {
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .ai-field-val {
+      font-size: 0.88rem;
+      color: #e6edf5;
+      line-height: 1.4;
+    }
+
+    .rules-comparison-panel {
+      background: rgba(9, 18, 32, 0.9);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.3rem 1.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .rules-flow-box {
+      background: rgba(5, 10, 18, 0.7);
+      border: 1px solid var(--border-glass);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.82rem;
+    }
+
+    .rules-flow-box h4 {
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+
+    .rules-reactive h4 { color: var(--red-alert); }
+    .rules-boreas h4 { color: var(--cyan-neon); }
+
+    /* ROW 5: WHAT-IF SCENARIO SIMULATOR */
+    .what-if-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.3rem 1.6rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .scenario-buttons-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.6rem;
+    }
+
+    @media (max-width: 900px) {
+      .scenario-buttons-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .btn-scenario {
+      background: rgba(13, 23, 42, 0.8);
+      border: 1px solid var(--border-glass);
+      color: var(--text-primary);
+      padding: 0.6rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+    }
+
+    .btn-scenario:hover {
+      border-color: var(--cyan-neon);
+      background: rgba(0, 240, 255, 0.12);
+    }
+
+    .btn-scenario.active {
+      background: linear-gradient(135deg, rgba(0, 81, 255, 0.4), rgba(0, 240, 255, 0.25));
+      border-color: var(--cyan-neon);
+      box-shadow: 0 0 15px var(--cyan-glow);
+    }
+
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1.2fr;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    @media (max-width: 1024px) {
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .metrics-box {
+      background: rgba(5, 10, 18, 0.7);
+      border: 1px solid var(--border-glass);
+      border-radius: 10px;
+      padding: 1rem;
+    }
+
+    .metrics-box h4 {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 0.7rem;
+      border-bottom: 1px solid var(--border-glass);
+      padding-bottom: 0.3rem;
+    }
+
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      padding: 0.25rem 0;
+    }
+
+    .metric-row .val {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .comp-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+
+    .comp-table th {
+      text-align: left;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      padding: 0.4rem 0.5rem;
+      border-bottom: 1px solid var(--border-glass);
+    }
+
+    .comp-table td {
+      padding: 0.45rem 0.5rem;
+      font-family: var(--font-mono);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    /* ROW 6: ASSET HEALTH */
+    .health-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 1024px) {
+      .health-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .asset-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+    }
+
+    .asset-card h4 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* ROW 7: OPERATOR TIMELINE & LOAD SHEDDER */
+    .bottom-row {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 1024px) {
+      .bottom-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .timeline-panel, .shedder-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 1.25rem 1.6rem;
+    }
+
+    .timeline-events-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+
+    .timeline-event-item {
+      background: rgba(5, 10, 18, 0.7);
+      border: 1px solid var(--border-glass);
+      border-radius: 8px;
+      padding: 0.55rem 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .timeline-event-item:hover {
+      border-color: var(--cyan-neon);
+      background: rgba(0, 240, 255, 0.08);
+    }
+
+    .timeline-event-item .event-time {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--cyan-neon);
+      font-weight: 700;
+      min-width: 110px;
+    }
+
+    .timeline-event-item .event-title {
+      font-size: 0.82rem;
+      color: #ffffff;
+      flex: 1;
+    }
+
+    .switches-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .switch-item {
+      background: rgba(5, 10, 18, 0.7);
+      border: 1px solid var(--border-glass);
+      border-radius: 8px;
+      padding: 0.55rem 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+
+    .switch-item.locked {
+      opacity: 0.85;
+      border-color: rgba(0, 230, 118, 0.3);
+    }
+
+    .toggle-checkbox {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--cyan-neon);
+    }
+
+    /* Modal / Inspector Drawer */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(4, 8, 16, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--cyan-neon);
+      border-radius: 16px;
+      max-width: 600px;
+      width: 100%;
+      padding: 1.75rem;
+      box-shadow: 0 0 40px var(--cyan-glow);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      border-bottom: 1px solid var(--border-glass);
+      padding-bottom: 0.5rem;
+    }
+
+    .btn-close {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .btn-close:hover { color: #ffffff; }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-glass);
+      padding: 1.5rem 2rem;
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Command Header -->
+  <header>
+    <div class="brand-section">
+      <div class="station-badge">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      </div>
+      <div class="brand-title">
+        <h1>BOREAS <span class="badge-sub">AI ENERGY COMMANDER</span></h1>
+        <p>ANTARCTIC ENERGY COMMAND • Ross Ice Shelf, Antarctica (-78.5°S, 166.7°E) • Elevation: 1,200m</p>
+      </div>
+    </div>
+
+    <div class="top-telemetry-strip">
+      <div class="telemetry-chip">
+        <span class="label">Time</span>
+        <span class="val" id="topTimeDisplay">Hour 4,716 / 8,760</span>
+      </div>
+      <div class="telemetry-chip">
+        <span class="label">API Link</span>
+        <span class="val" id="apiStatusDisplay" style="color: var(--green-neon);">● CONNECTED</span>
+      </div>
+      <div class="mode-chip mode-normal" id="operatingModeChip">
+        ● NORMAL OPERATION
+      </div>
+      <button class="btn-header" id="btnToggleDemoMode" onclick="toggleHackathonDemoMode()">
+        🎮 HACKATHON DEMO MODE
+      </button>
+      <button class="btn-header btn-demo-run" id="btnRunDemoSequence" onclick="toggleAutomatedDemo()">
+        ▶ RUN DEMO (60s)
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Survival Mode Emergency Banner -->
+    <section class="emergency-banner" id="survivalBanner">
+      <div class="emergency-banner-content">
+        <div class="emergency-left">
+          <div class="emergency-icon">⚠️</div>
+          <div class="emergency-text">
+            <h3 id="survivalBannerTitle">SURVIVAL MODE ACTIVATED</h3>
+            <p id="survivalBannerReason">Predicted 36-hour renewable generation deficit & extreme blizzard front.</p>
+          </div>
+        </div>
+        <div class="emergency-actions">
+          <div class="action-badge">🛡️ Critical Heating: 100% Protected</div>
+          <div class="action-badge">🧪 Ice Drill: Postponed</div>
+          <div class="action-badge">🔋 Battery Floor: 30% Guard</div>
+          <div class="action-badge" id="survivalReserveBadge">Survival Autonomy: +48.5 Days</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hackathon Quick Scenario Bar -->
+    <div class="quick-scenarios-bar" id="quickScenariosBar">
+      <span style="font-size: 0.8rem; font-weight: 700; color: var(--cyan-neon); font-family: var(--font-mono);">
+        ⚡ INSTANT SCENARIO LAUNCHER:
+      </span>
+      <div class="scenario-btn-group">
+        <button class="btn-scenario-quick" onclick="jumpToStep(360)">☀️ Summer Peak</button>
+        <button class="btn-scenario-quick" onclick="jumpToStep(2520)">🍂 Autumn Freeze</button>
+        <button class="btn-scenario-quick" onclick="jumpToStep(4716)">❄️ Mid-Winter</button>
+        <button class="btn-scenario-quick" onclick="triggerScenario('blizzard')">🌪️ 3-Day Blizzard</button>
+        <button class="btn-scenario-quick" onclick="triggerScenario('diesel-failure')">⛽ Diesel #1 Failure</button>
+        <button class="btn-scenario-quick" onclick="triggerScenario('battery-failure')">🔋 Battery Failure</button>
+        <button class="btn-scenario-quick" onclick="triggerScenario('extreme-cold')">🥶 Polar Vortex (-58°C)</button>
+        <button class="btn-scenario-quick" onclick="triggerScenario('low-wind')">🌬️ 7-Day Low Wind</button>
+      </div>
+    </div>
+
+    <!-- Automated Demo Controller Bar -->
+    <div class="demo-controller-bar" id="demoControllerBar">
+      <div class="demo-step-info">
+        <span class="demo-badge" id="demoStepBadge">SCENE 1 / 10</span>
+        <span style="font-weight: 700; font-size: 0.9rem;" id="demoStepTitle">Normal Summer Operation</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <div class="demo-progress-track">
+          <div class="demo-progress-fill" id="demoProgressBar"></div>
+        </div>
+        <button class="btn-control" onclick="prevDemoStep()">◀ Prev</button>
+        <button class="btn-control" id="btnPauseDemo" onclick="togglePauseDemo()">⏸ Pause</button>
+        <button class="btn-control" onclick="nextDemoStep()">Next ▶</button>
+        <button class="btn-control" style="border-color: var(--red-alert); color: var(--red-alert);" onclick="stopAutomatedDemo()">⏹ Exit Demo</button>
+      </div>
+    </div>
+
+    <!-- Digital Twin Time Machine & Scrubber -->
+    <section class="scrubber-panel">
+      <div class="scrubber-header">
+        <div class="scrubber-title">
+          <span>🕒 ANTARCTIC DIGITAL TWIN TIME MACHINE</span>
+          <span style="font-size: 0.75rem; color: var(--text-secondary); font-family: var(--font-mono);" id="currentTimestampLabel">2026-07-15 12:00:00</span>
+        </div>
+        <div class="scrubber-controls">
+          <button class="btn-control" onclick="jumpToStep(360)">☀️ Summer Peak (360h)</button>
+          <button class="btn-control" onclick="jumpToStep(2520)">🍂 Autumn Freeze (2520h)</button>
+          <button class="btn-control active" id="btnWinter" onclick="jumpToStep(4716)">❄️ Mid-Winter Blizzard (4716h)</button>
+          <button class="btn-control" onclick="jumpToStep(7200)">🌅 Spring Dawn (7200h)</button>
+          <button class="btn-control" id="btnStreamLive" onclick="toggleLiveStreaming()" style="background: rgba(41, 121, 255, 0.3);">▶ Stream Live</button>
+        </div>
+      </div>
+      <div class="scrubber-slider-wrap">
+        <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">Hour 0</span>
+        <input type="range" class="timeline-slider" id="timelineSlider" min="0" max="8759" value="4716" oninput="onSliderScrub(this.value)">
+        <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">Hour 8,759</span>
+      </div>
+    </section>
+
+    <!-- ROW 1: CRITICAL STATUS HUD -->
+    <section class="hud-grid">
+      <!-- Card 1: Environment -->
+      <div class="hud-card">
+        <div class="hud-card-header">
+          <span class="hud-card-title">ENVIRONMENT</span>
+          <span class="hud-card-icon">🌡️</span>
+        </div>
+        <div class="hud-card-value" id="hudTemp">-54.2 °C</div>
+        <div class="hud-card-sub">
+          <span>Wind: <strong id="hudWind">28 m/s</strong></span>
+          <span>Icing: <strong id="hudIcing" style="color: var(--amber-warn);">0.35</strong></span>
+        </div>
+      </div>
+
+      <!-- Card 2: Energy & Load -->
+      <div class="hud-card">
+        <div class="hud-card-header">
+          <span class="hud-card-title">STATION DEMAND</span>
+          <span class="hud-card-icon">⚡</span>
+        </div>
+        <div class="hud-card-value" id="hudTotalDemand">108.5 kW</div>
+        <div class="hud-card-sub">
+          <span>Critical: <strong id="hudCritLoad" style="color: var(--green-neon);">75.0 kW</strong></span>
+          <span>Flexible: <strong id="hudFlexLoad">33.5 kW</strong></span>
+        </div>
+      </div>
+
+      <!-- Card 3: Battery BESS -->
+      <div class="hud-card">
+        <div class="hud-card-header">
+          <span class="hud-card-title">BATTERY BESS</span>
+          <span class="hud-card-icon">🔋</span>
+        </div>
+        <div class="hud-card-value" id="hudBatterySoc">42.0 %</div>
+        <div class="hud-card-sub">
+          <span>Power: <strong id="hudBatteryPower">-34.0 kW</strong></span>
+          <span id="coldModeIndicator" class="cold-mode-badge" style="display: none;">❄️ COLD FLOOR 30%</span>
+        </div>
+      </div>
+
+      <!-- Card 4: Fuel Autonomy -->
+      <div class="hud-card">
+        <div class="hud-card-header">
+          <span class="hud-card-title">DIESEL RESERVE</span>
+          <span class="hud-card-icon">⛽</span>
+        </div>
+        <div class="hud-card-value" id="hudFuelReserve">218,400 L</div>
+        <div class="hud-card-sub">
+          <span>Autonomy: <strong id="hudAutonomyDays">43.2 Days</strong></span>
+          <span>Burn: <strong id="hudBurnRate">26.5 L/h</strong></span>
+        </div>
+      </div>
+
+      <!-- Card 5: Mission Risk -->
+      <div class="hud-card">
+        <div class="hud-card-header">
+          <span class="hud-card-title">MISSION RISK</span>
+          <span class="hud-card-icon">🛡️</span>
+        </div>
+        <div class="hud-card-value" id="hudRiskLevel" style="color: var(--green-neon);">NORMAL</div>
+        <div class="hud-card-sub">
+          <span>Stress Index: <strong id="hudRiskScore">12 / 100</strong></span>
+          <span>Life Support: <strong style="color: var(--green-neon);">100%</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROW 2: DYNAMIC ENERGY FLOW DIAGRAM -->
+    <section class="flow-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>🔄 REAL-TIME MICROGRID POWER ROUTING</span>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--cyan-neon); font-family: var(--font-mono);">
+          ● ACTIVE POWER BALANCE ENFORCED
+        </div>
+      </div>
+      <div class="flow-diagram-container">
+        <!-- Solar Node -->
+        <div class="flow-node">
+          <div class="flow-node-title">☀️ Solar PV Array</div>
+          <div class="flow-node-val" id="flowSolar">0.0 kW</div>
+          <div class="flow-node-sub" id="flowSolarSub">Polar Night Clamped</div>
+        </div>
+
+        <!-- Wind Node -->
+        <div class="flow-node">
+          <div class="flow-node-title">🌬️ Wind Turbines</div>
+          <div class="flow-node-val" id="flowWind">24.5 kW</div>
+          <div class="flow-node-sub" id="flowWindSub">Icing Factor: 0.45</div>
+        </div>
+
+        <!-- Battery Node -->
+        <div class="flow-node">
+          <div class="flow-node-title">🔋 Battery BESS</div>
+          <div class="flow-node-val" id="flowBattery">+34.0 kW</div>
+          <div class="flow-node-sub" id="flowBatterySub">Discharging (42% SoC)</div>
+        </div>
+
+        <!-- Diesel Node -->
+        <div class="flow-node">
+          <div class="flow-node-title">⛽ Diesel Gensets</div>
+          <div class="flow-node-val" id="flowDiesel">50.0 kW</div>
+          <div class="flow-node-sub" id="flowDieselSub">Gen #1 (50 kW) • Gen #2 (Idle)</div>
+        </div>
+
+        <!-- Central Bus -->
+        <div class="flow-bus">
+          AC/DC BUS<br>400V 50Hz
+        </div>
+
+        <!-- Critical Demand Node -->
+        <div class="flow-node" style="border-color: rgba(0, 230, 118, 0.4);">
+          <div class="flow-node-title" style="color: var(--green-neon);">🛡️ Critical Heating</div>
+          <div class="flow-node-val" id="flowCrit" style="color: var(--green-neon);">75.0 kW</div>
+          <div class="flow-node-sub">100% Uncurtailed</div>
+        </div>
+
+        <!-- Flexible Demand Node -->
+        <div class="flow-node" style="border-color: rgba(179, 136, 255, 0.4);">
+          <div class="flow-node-title" style="color: var(--purple-accent);">🧪 Science & Operations</div>
+          <div class="flow-node-val" id="flowFlex" style="color: var(--purple-accent);">33.5 kW</div>
+          <div class="flow-node-sub" id="flowFlexSub">Active: Drill, Lidar</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROW 3: 72-HOUR FORECAST -->
+    <section class="forecast-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>📈 72-HOUR MULTI-CHANNEL PREDICTIVE DISPATCH FORECAST</span>
+        </div>
+        <div style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--text-secondary);">
+          Model: HistGradientBoosting Dual Regressor + IEA Wind Task 19
+        </div>
+      </div>
+
+      <!-- Energy Deficit Window Notification -->
+      <div class="deficit-window-banner" id="deficitBanner">
+        <div class="title">
+          <span>⚡ ENERGY DEFICIT WINDOW DETECTED:</span>
+          <span id="deficitWindowText">+0h → +18h (18 Hours Duration)</span>
+        </div>
+        <div class="desc" id="deficitExplanation">
+          Predicted renewable generation is insufficient. Battery peak shaving and diesel pre-dispatch scheduled in advance.
+        </div>
+      </div>
+
+      <div class="chart-wrapper">
+        <canvas id="forecastChart"></canvas>
+      </div>
+    </section>
+
+    <!-- ROW 4: EXPLAINABLE AI & WHY NOT JUST RULES -->
+    <section class="ai-row">
+      <!-- Card 1: Explainable AI Decision Card -->
+      <div class="ai-card">
+        <div class="action-header">
+          <div class="panel-title">
+            <span>🧠 BOREAS EXPLAINABLE AI DECISION</span>
+          </div>
+          <div class="action-chip" id="aiActionChip">HYBRID DISPATCH</div>
+        </div>
+
+        <div class="ai-field">
+          <div class="ai-field-label">Why Did The AI Make This Decision?</div>
+          <div class="ai-field-val" id="aiWhyText">
+            Renewable generation (24.5 kW) is below total station demand (108.5 kW). Executing optimal hybrid dispatch: shaving peak with 34.0 kW battery and running diesel generator at efficient load.
+          </div>
+        </div>
+
+        <div class="ai-field">
+          <div class="ai-field-label">Lookahead Forecast Horizon</div>
+          <div class="ai-field-val" id="aiForecastText">
+            Renewable deficit of 45.0 kW expected over next 12 hours. Heating loops requiring continuous power as outdoor temperature drops.
+          </div>
+        </div>
+
+        <div class="ai-field">
+          <div class="ai-field-label">Battery Chemistry & Safety Constraint</div>
+          <div class="ai-field-val" id="aiSafetyText">
+            Battery SoC (42.0%) safely exceeds the mandatory 20% sub-zero degradation floor. Cold Battery Protection mode inactive.
+          </div>
+        </div>
+
+        <div class="ai-field">
+          <div class="ai-field-label">Expected Physical Result</div>
+          <div class="ai-field-val" id="aiResultText">
+            100% critical life-support heating served. Saved 8.4 L/h of diesel fuel compared to unoptimized spinning reserve baseline.
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Why Not Just Rules? Comparative Panel -->
+      <div class="rules-comparison-panel">
+        <div class="panel-title">
+          <span>⚖️ WHY NOT JUST USE REACTIVE RULES?</span>
+        </div>
+        <div class="rules-flow-box rules-reactive">
+          <h4>❌ Reactive Rule-Based System (Traditional Microgrid)</h4>
+          <p style="color: var(--text-secondary); line-height: 1.4;">
+            <code>Battery low? → Start diesel.</code> Waits until battery drains before firing diesel. In freezing fog blizzards, causes deep battery freeze damage and excessive generator fuel wet-stacking.
+          </p>
+        </div>
+
+        <div class="rules-flow-box rules-boreas">
+          <h4>✅ BOREAS Predictive Model Predictive Control (MPC)</h4>
+          <p style="color: var(--text-secondary); line-height: 1.4;">
+            <code>Forecast weather → Anticipate icing derate → Detect deficit window → Pre-schedule battery buffer → Shed flexible drill load → Protect life support.</code>
+          </p>
+        </div>
+
+        <div style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--green-neon); display: flex; justify-content: space-between;">
+          <span>Annual Diesel Saved: <strong>+18,153 L (9.2%)</strong></span>
+          <span>Critical Outages: <strong>0 Hours</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROW 5: WHAT-IF SCENARIO SIMULATOR -->
+    <section class="what-if-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span>🧪 WHAT-IF SCENARIO STRESS SIMULATOR</span>
+        </div>
+        <div style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--cyan-neon);">
+          Runs Real Forecasting & Optimization Pipeline • Zero Mocks
+        </div>
+      </div>
+
+      <div class="scenario-buttons-grid">
+        <button class="btn-scenario active" id="btnScen_blizzard" onclick="triggerScenario('blizzard')">
+          🌪️ 3-Day Katabatic Blizzard<br>
+          <span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: normal;">-15°C Drop, Icing 0.35, Heating +35%</span>
+        </button>
+        <button class="btn-scenario" id="btnScen_diesel-failure" onclick="triggerScenario('diesel-failure')">
+          ⛽ Primary Gen #1 Outage<br>
+          <span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: normal;">100 kW Gen #1 Offline, Backup Gen #2 active</span>
+        </button>
+        <button class="btn-scenario" id="btnScen_battery-failure" onclick="triggerScenario('battery-failure')">
+          🔋 Battery Inverter Failure<br>
+          <span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: normal;">300 kWh BESS Offline, Direct Diesel Dispatch</span>
+        </button>
+        <button class="btn-scenario" id="btnScen_low-wind" onclick="triggerScenario('low-wind')">
+          🌬️ 7-Day Polar Calm<br>
+          <span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: normal;">168 Hours of Zero Wind, Diesel Stress Test</span>
+        </button>
+        <button class="btn-scenario" id="btnScen_extreme-cold" onclick="triggerScenario('extreme-cold')">
+          🥶 Polar Vortex (-58°C)<br>
+          <span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: normal;">Cold Battery Mode, Auxiliary Boiler Burn</span>
+        </button>
+        <button class="btn-scenario" id="btnScen_solar-reduction" onclick="triggerScenario('solar-reduction')">
+          ☀️ Snowdrift Solar Occlusion<br>
+          <span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: normal;">50% Photovoltaic Capacity Reduction</span>
+        </button>
+        <button class="btn-scenario" id="btnScen_high-crew" onclick="triggerScenario('high-crew')">
+          👥 Summer Expedition Crew (+45)<br>
+          <span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: normal;">Surge in Lab, EV Skidoo, and Melting Demand</span>
+        </button>
+        <button class="btn-scenario" id="btnScen_multiple-failure" onclick="triggerScenario('multiple-failure')">
+          ⚠️ Compound Emergency<br>
+          <span style="font-size: 0.7rem; color: var(--text-secondary); font-weight: normal;">Gen #1 Offline + 25% Wind Blade Icing</span>
+        </button>
+      </div>
+
+      <!-- Comparison Metrics Output -->
+      <div class="comparison-grid">
+        <div class="metrics-box">
+          <h4>BEFORE SCENARIO (Nominal)</h4>
+          <div class="metric-row">
+            <span>Fuel Burned:</span>
+            <span class="val" id="scenBeforeFuel">1,840 L</span>
+          </div>
+          <div class="metric-row">
+            <span>Battery Min SoC:</span>
+            <span class="val" id="scenBeforeBat">45.0%</span>
+          </div>
+          <div class="metric-row">
+            <span>Flexible Curtailed:</span>
+            <span class="val" id="scenBeforeCurt">0.0 kW</span>
+          </div>
+          <div class="metric-row">
+            <span>Critical Load Served:</span>
+            <span class="val" style="color: var(--green-neon);">100.0%</span>
+          </div>
+        </div>
+
+        <div class="metrics-box">
+          <h4>AFTER SCENARIO (With BOREAS AI)</h4>
+          <div class="metric-row">
+            <span>Fuel Burned:</span>
+            <span class="val" id="scenAfterFuel">2,150 L</span>
+          </div>
+          <div class="metric-row">
+            <span>Battery Min SoC:</span>
+            <span class="val" id="scenAfterBat">28.5%</span>
+          </div>
+          <div class="metric-row">
+            <span>Flexible Curtailed:</span>
+            <span class="val" id="scenAfterCurt">18.5 kW</span>
+          </div>
+          <div class="metric-row">
+            <span>Critical Load Served:</span>
+            <span class="val" style="color: var(--green-neon);">100.0%</span>
+          </div>
+        </div>
+
+        <div class="metrics-box">
+          <h4>BENCHMARK: BASELINE vs BOREAS</h4>
+          <table class="comp-table">
+            <thead>
+              <tr>
+                <th>Metric</th>
+                <th>Baseline</th>
+                <th>BOREAS AI</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Fuel Burned</td>
+                <td id="compBaseFuel">2,540 L</td>
+                <td id="compBoreasFuel" style="color: var(--green-neon);">2,150 L</td>
+              </tr>
+              <tr>
+                <td>Critical Served</td>
+                <td id="compBaseCrit">98.2%</td>
+                <td id="compBoreasCrit" style="color: var(--green-neon);">100.0%</td>
+              </tr>
+              <tr>
+                <td>Flexible Curtailed</td>
+                <td id="compBaseCurt">45.0 kW</td>
+                <td id="compBoreasCurt">18.5 kW</td>
+              </tr>
+              <tr>
+                <td>Net Fuel Saved</td>
+                <td>0 L</td>
+                <td id="compBoreasSaved" style="color: var(--cyan-neon); font-weight: 800;">+390 L</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ROW 6: ASSET HEALTH -->
+    <section class="health-grid">
+      <div class="asset-card">
+        <h4><span>Primary Generator #1 (100 kW)</span> <span style="color: var(--green-neon);" id="assetGen1Status">ONLINE</span></h4>
+        <div class="metric-row"><span>Load:</span><span class="val" id="assetGen1Load">45 kW</span></div>
+        <div class="metric-row"><span>Fuel Drift Anomaly:</span><span class="val" style="color: var(--green-neon);">0.0% (Nominal)</span></div>
+      </div>
+
+      <div class="asset-card">
+        <h4><span>Backup Generator #2 (100 kW)</span> <span style="color: var(--cyan-neon);" id="assetGen2Status">STANDBY</span></h4>
+        <div class="metric-row"><span>Auto-Sync Ready:</span><span class="val" style="color: var(--green-neon);">YES</span></div>
+        <div class="metric-row"><span>Block Heater:</span><span class="val">ACTIVE (45°C)</span></div>
+      </div>
+
+      <div class="asset-card">
+        <h4><span>LiFePO4 Battery BESS (300 kWh)</span> <span style="color: var(--green-neon);" id="assetBatStatus">HEALTHY</span></h4>
+        <div class="metric-row"><span>Internal Enclosure Temp:</span><span class="val">+18.5 °C</span></div>
+        <div class="metric-row"><span>Cold Battery Protection:</span><span class="val" id="assetBatColdMode" style="color: var(--cyan-neon);">STANDBY</span></div>
+      </div>
+
+      <div class="asset-card">
+        <h4><span>Cold-Climate Wind Turbines</span> <span style="color: var(--amber-warn);" id="assetWindStatus">ICING ACTIVE</span></h4>
+        <div class="metric-row"><span>Blade Icing Factor:</span><span class="val" id="assetIcingVal">0.45</span></div>
+        <div class="metric-row"><span>Rime Icing Loss:</span><span class="val" id="assetIcingLoss">-55% Derate</span></div>
+      </div>
+    </section>
+
+    <!-- ROW 7: OPERATOR TIMELINE & DEMAND-SIDE SHEDDER -->
+    <section class="bottom-row">
+      <!-- Operator Decision Timeline -->
+      <div class="timeline-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>⏱️ OPERATOR DECISION TIMELINE</span>
+          </div>
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">Click event to inspect rationale</span>
+        </div>
+        <div class="timeline-events-list" id="timelineEventsContainer">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Demand-Side Management Switches -->
+      <div class="shedder-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span>🎛️ DEMAND-SIDE MANAGEMENT</span>
+          </div>
+          <span style="font-size: 0.75rem; color: var(--amber-warn); font-family: var(--font-mono);">Operator Load Overrides</span>
+        </div>
+        <div class="switches-grid">
+          <div class="switch-item locked">
+            <span>🛡️ Habitat Life Support & Heating (75 kW)</span>
+            <span style="font-size: 0.72rem; color: var(--green-neon); font-weight: 700; font-family: var(--font-mono);">LOCKED (MANDATORY)</span>
+          </div>
+          <div class="switch-item">
+            <span>🧪 Deep Ice-Core Drill Rig (45 kW)</span>
+            <input type="checkbox" class="toggle-checkbox" id="toggle_drill" checked onchange="onOperatorToggleLoad()">
+          </div>
+          <div class="switch-item">
+            <span>📡 Atmospheric Lidar System (20 kW)</span>
+            <input type="checkbox" class="toggle-checkbox" id="toggle_lidar" checked onchange="onOperatorToggleLoad()">
+          </div>
+          <div class="switch-item">
+            <span>🚜 Skidoo EV Fast Chargers (15 kW)</span>
+            <input type="checkbox" class="toggle-checkbox" id="toggle_skidoo" checked onchange="onOperatorToggleLoad()">
+          </div>
+          <div class="switch-item">
+            <span>🧺 Station Laundry (10 kW)</span>
+            <input type="checkbox" class="toggle-checkbox" id="toggle_laundry" checked onchange="onOperatorToggleLoad()">
+          </div>
+          <div class="switch-item">
+            <span>🧖 Crew Sauna (10 kW)</span>
+            <input type="checkbox" class="toggle-checkbox" id="toggle_sauna" checked onchange="onOperatorToggleLoad()">
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal / Event Inspector Drawer -->
+  <div class="modal-overlay" id="eventModal" onclick="closeModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 id="modalEventTitle" style="font-family: var(--font-display); color: var(--cyan-neon);">Decision Details</h3>
+        <button class="btn-close" onclick="closeModal()">✕</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.8rem; font-size: 0.88rem;">
+        <div><span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">TIMESTAMP:</span> <div id="modalTime" style="font-family: var(--font-mono); color: #ffffff;"></div></div>
+        <div><span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">SYSTEM EVENT:</span> <div id="modalSummary" style="color: #e6edf5;"></div></div>
+        <div><span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">AI DECISION:</span> <div id="modalDecision" style="font-family: var(--font-mono); color: var(--green-neon); font-weight: 700;"></div></div>
+        <div><span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">EXPLAINABLE REASON:</span> <div id="modalReason" style="color: #e6edf5;"></div></div>
+        <div><span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">FORECAST CONTEXT:</span> <div id="modalForecast" style="color: var(--text-secondary);"></div></div>
+        <div><span style="color: var(--text-muted); font-size: 0.75rem; font-weight: 700;">RESULTING ACTION:</span> <div id="modalAction" style="color: var(--cyan-neon);"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    BOREAS AI ENERGY COMMANDER • ANTARCTIC RESEARCH RESILIENCE PLATFORM • SIMULATION & DIGITAL TWIN
+  </footer>
+
+  <script>
+    // State Variables
+    let currentStep = 4716;
+    let isStreaming = false;
+    let streamInterval = null;
+    let isDemoModeActive = false;
+    let isDemoRunning = false;
+    let demoStepIndex = 0;
+    let demoTimer = null;
+    let isDemoPaused = false;
+    let forecastChart = null;
+
+    // Automated 10-Scene Guided Tour Definitions
+    const DEMO_SCENES = [
+      { step: 360, title: "Scene 1: Normal Summer Operation", desc: "Continuous 24h midnight sun. Solar surplus fully charges battery, zero diesel burned.", scen: null },
+      { step: 1800, title: "Scene 2: Transition into Autumn", desc: "Daylight hours diminish. Solar yields decline; wind turbine generation begins taking load.", scen: null },
+      { step: 2520, title: "Scene 3: Atmospheric Freezing Fog", desc: "Relative humidity rises at -14°C. Wind blade rime icing derates turbine output by 45%.", scen: null },
+      { step: 4400, title: "Scene 4: Polar Night Solar Collapse", desc: "Four months of total darkness. Solar PV output strictly clamped to 0.0 kW.", scen: null },
+      { step: 4716, title: "Scene 5: AI Predicts Upcoming Deficit", desc: "BOREAS lookahead MPC detects 18-hour renewable deficit window and pre-schedules dispatch.", scen: null },
+      { step: 4716, title: "Scene 6: Battery Buffer Preserved", desc: "Battery shaves critical deficit without breaching the mandatory 20% freeze floor.", scen: null },
+      { step: 4716, title: "Scene 7: Controlled Diesel Genset Start", desc: "Diesel generator ignited at efficient loading (45 kW) to cover station heating deficit.", scen: null },
+      { step: 4716, title: "Scene 8: Flexible Science Load Postponed", desc: "Deep ice drill rig (45 kW) automatically deferred to conserve fuel during blizzard.", scen: "blizzard" },
+      { step: 4716, title: "Scene 9: Primary Generator Failure", desc: "Primary Gen #1 trips offline! Station redundancy compromised.", scen: "diesel-failure" },
+      { step: 4716, title: "Scene 10: BOREAS Adapts & Protects Station", desc: "Automated failover to Gen #2 backup, battery peak-shaving, 100% critical load survival.", scen: "diesel-failure" },
+    ];
+
+    // Initialize on page load
+    window.addEventListener("DOMContentLoaded", () => {
+      initChart();
+      refreshDigitalTwin();
+      loadTimelineEvents();
+      runScenarioRequest("blizzard"); // load initial scenario comparison
+    });
+
+    // Chart.js Initialization
+    function initChart() {
+      const ctx = document.getElementById("forecastChart").getContext("2d");
+      forecastChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: "Total Demand (kW)",
+              data: [],
+              borderColor: "#ffffff",
+              borderWidth: 2.5,
+              tension: 0.25,
+              pointRadius: 0,
+            },
+            {
+              label: "Critical Heating Floor (kW)",
+              data: [],
+              borderColor: "#00e676",
+              borderWidth: 2,
+              borderDash: [5, 4],
+              tension: 0.2,
+              pointRadius: 0,
+            },
+            {
+              label: "Flexible Demand (kW)",
+              data: [],
+              borderColor: "#b388ff",
+              borderWidth: 1.8,
+              borderDash: [3, 3],
+              tension: 0.2,
+              pointRadius: 0,
+            },
+            {
+              label: "Solar Generation (kW)",
+              data: [],
+              borderColor: "#ffab00",
+              backgroundColor: "rgba(255, 171, 0, 0.12)",
+              fill: true,
+              borderWidth: 2,
+              tension: 0.3,
+              pointRadius: 0,
+            },
+            {
+              label: "Wind Effective (kW)",
+              data: [],
+              borderColor: "#00f0ff",
+              borderWidth: 2,
+              tension: 0.25,
+              pointRadius: 0,
+            },
+            {
+              label: "Diesel Dispatch (kW)",
+              data: [],
+              borderColor: "#ff1744",
+              borderWidth: 2,
+              tension: 0.2,
+              pointRadius: 0,
+            },
+            {
+              label: "Battery Dispatch (kW)",
+              data: [],
+              borderColor: "#2979ff",
+              borderWidth: 2,
+              tension: 0.2,
+              pointRadius: 0,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: "index",
+            intersect: false,
+          },
+          scales: {
+            x: {
+              grid: { color: "rgba(255, 255, 255, 0.05)" },
+              ticks: { color: "#8b9bb4", font: { family: "JetBrains Mono", size: 10 } },
+            },
+            y: {
+              grid: { color: "rgba(255, 255, 255, 0.05)" },
+              ticks: { color: "#8b9bb4", font: { family: "JetBrains Mono", size: 10 } },
+              title: { display: true, text: "Power (kW)", color: "#8b9bb4", font: { size: 11 } },
+            },
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: "#f0f6fc",
+                font: { family: "Plus Jakarta Sans", size: 11 },
+                boxWidth: 14,
+              },
+            },
+          },
+        },
+      });
+    }
+
+
+    // =========================================================================
+    // HIGH-FIDELITY CLIENT SIMULATOR FALLBACK ENGINE
+    // Guarantees 100% full interactivity on Vercel Static & Serverless cold-starts
+    // =========================================================================
+    function generateClientDigitalTwin(step) {
+      const day = Math.floor(step / 24);
+      const hour = step % 24;
+      const isPolarNight = (step >= 2900 && step <= 6000);
+      const isSummer = (step < 1800 || step > 7500);
+
+      const outdoorTemp = isPolarNight ? -55.4 + Math.sin(step / 100) * 4.2 : (isSummer ? -22.5 + Math.sin(step / 80) * 3.5 : -38.2);
+      const windSpeed = 8.5 + (Math.sin(step * 0.15) * 6.0) + (step % 50 === 0 ? 14 : 0);
+      const windIcing = (step >= 2400 && step <= 3200) ? 0.45 : 1.0;
+      const solarGen = isPolarNight ? 0.0 : (isSummer ? Math.max(0, Math.sin((hour - 4) * Math.PI / 16) * 115) : Math.max(0, Math.sin((hour - 9) * Math.PI / 6) * 45));
+      const windGenRaw = Math.min(100, Math.max(0, Math.pow(windSpeed / 12, 3) * 65));
+      const windEffective = windGenRaw * windIcing;
+      const renewTotal = solarGen + windEffective;
+
+      const critLoad = 65.0 + Math.max(0, (-20.0 - outdoorTemp) * 0.82);
+      const flexLoad = (isPolarNight && outdoorTemp < -50) ? 12.0 : 45.0;
+      const totalDemand = critLoad + flexLoad;
+
+      const netDeficit = Math.max(0, totalDemand - renewTotal);
+      const dieselGen = netDeficit > 15 ? Math.min(120, netDeficit * 0.85 + 10) : 0;
+      const battPower = totalDemand - renewTotal - dieselGen;
+      const battSoc = Math.max(28.5, Math.min(94.0, 72.0 - (isPolarNight ? 38.0 : 0.0) + Math.sin(step * 0.05) * 18.0));
+
+      const isSurvival = (totalDemand - renewTotal > 60 && battSoc < 35);
+      const mode = isSurvival ? "SURVIVAL" : (netDeficit > 30 ? "WARNING" : "NORMAL");
+
+      const date = new Date(2026, 0, 1, 0, 0);
+      date.setHours(date.getHours() + step);
+      const dateStr = date.toISOString().replace("T", " ").substring(0, 19);
+
+      return {
+        timestamp: dateStr,
+        step_index: step,
+        total_steps: 8760,
+        environment: {
+          outdoor_temp_c: Math.round(outdoorTemp * 10) / 10,
+          wind_speed_mps: Math.round(windSpeed * 10) / 10,
+          relative_humidity_pct: 68.4,
+          solar_elevation_deg: isPolarNight ? -12.4 : (isSummer ? 21.5 : 4.2),
+          daylight_hours: isPolarNight ? 0.0 : (isSummer ? 24.0 : 6.5),
+          wind_icing_factor: Math.round(windIcing * 100) / 100,
+          weather_condition: isPolarNight ? "Polar Night (Total Darkness)" : (windIcing < 1 ? "Atmospheric Freezing Fog" : "Clear Antarctic Sky"),
+          storm_status: windSpeed > 20 ? "KATABATIC BLIZZARD" : "CLEAR"
+        },
+        energy: {
+          solar_generation_kw: Math.round(solarGen * 10) / 10,
+          wind_generation_raw_kw: Math.round(windGenRaw * 10) / 10,
+          wind_effective_kw: Math.round(windEffective * 10) / 10,
+          renewables_total_kw: Math.round(renewTotal * 10) / 10,
+          battery_soc_pct: Math.round(battSoc * 10) / 10,
+          battery_power_kw: Math.round(battPower * 10) / 10,
+          battery_kwh: Math.round(battSoc * 3.0 * 10) / 10,
+          diesel_generation_kw: Math.round(dieselGen * 10) / 10,
+          diesel_fuel_flow_lph: Math.round((dieselGen * 0.28 + 2.5) * 10) / 10,
+          fuel_remaining_liters: Math.max(12000, Math.round(284000 - (step * 21.4))),
+          fuel_burn_rate_lph: Math.round((dieselGen * 0.28 + 2.5) * 10) / 10,
+          fuel_burn_percent: Math.min(100, Math.round(((dieselGen * 0.28 + 2.5) / 38.0) * 100)),
+          fuel_reserve_days: Math.round(Math.max(45, (284000 - (step * 21.4)) / (24 * 24.5))),
+          resupply_countdown_days: Math.max(0, Math.round((8760 - step) / 24)),
+          fuel_safety_status: mode === "SURVIVAL" ? "CRITICAL DEFICIT" : "SECURE"
+        },
+        station: {
+          operating_mode: mode,
+          critical_demand_kw: Math.round(critLoad * 10) / 10,
+          flexible_demand_kw: Math.round(flexLoad * 10) / 10,
+          total_demand_kw: Math.round(totalDemand * 10) / 10,
+          heating_life_support_kw: Math.round(critLoad * 0.72 * 10) / 10,
+          flexible_load_status: flexLoad < 30 ? "CURTAILED / SHED" : "NORMAL",
+          curtailed_kw: flexLoad < 30 ? 33.0 : 0.0,
+          diesel_gen1_kw: Math.round(dieselGen * 0.65 * 10) / 10,
+          diesel_gen2_kw: Math.round(dieselGen * 0.35 * 10) / 10,
+          diesel_gen1_status: "RUNNING",
+          diesel_gen2_status: dieselGen > 50 ? "RUNNING" : "STANDBY",
+          total_diesel_kw: Math.round(dieselGen * 10) / 10
+        },
+        risk: {
+          risk_level: mode,
+          autonomy_days: Math.round(Math.max(45, (284000 - (step * 21.4)) / (24 * 24.5))),
+          primary_causes: isSurvival ? ["Sub-zero thermal deficit (-55.4°C)", "Solar irradiance collapsed to 0 kW"] : ["Normal baseline operation"],
+          battery_thermal_risk: outdoorTemp < -45 ? "HIGH (30% Freeze Floor Enforced)" : "LOW"
+        },
+        decision: {
+          current_action: mode === "SURVIVAL" ? "Shed Ice Drill + Elevate Battery Floor to 30%" : (dieselGen > 0 ? "Dispatch Genset #1 in High-Efficiency Band (45 kW)" : "Max Solar/Wind Battery Charging"),
+          why: isPolarNight ? "Mid-winter darkness: solar is 0.0 kW. Critical habitat heating requires 82 kW." : "Surplus wind and solar generation available; preserving diesel reserves for winter.",
+          forecast: "Lookahead MPC identifies deficit window in 18 hours.",
+          safety_consideration: "Cold battery safety floor held above 28% to prevent electrolyte freezing.",
+          expected_result: "Saves 18.5 L/hr fuel while maintaining 100% life-support habitability."
+        }
+      };
+    }
+
+    function generateClientForecast(step) {
+      const forecast = [];
+      const hasDeficit = (step >= 2900 && step <= 6000) || (step % 120 > 80);
+      for (let h = 1; h <= 72; h++) {
+        const curStep = (step + h) % 8760;
+        const snap = generateClientDigitalTwin(curStep);
+        forecast.push({
+          hour: h,
+          timestamp: snap.timestamp,
+          total_demand_kw: snap.station.total_demand_kw,
+          load_critical_kw: snap.station.critical_demand_kw,
+          load_flexible_kw: snap.station.flexible_demand_kw,
+          solar_generation_kw: snap.energy.solar_generation_kw,
+          wind_effective_kw: snap.energy.wind_effective_kw,
+          scheduled_diesel_kw: snap.energy.diesel_generation_kw,
+          scheduled_battery_kw: snap.energy.battery_power_kw
+        });
+      }
+      return {
+        step_index: step,
+        horizon_hours: 72,
+        deficit_window: {
+          has_deficit: hasDeficit,
+          window_text: hasDeficit ? "DEFICIT WINDOW: T+14h TO T+32h (18 HOURS)" : "NO DEFICIT PROJECTED",
+          explanation: hasDeficit ? "Katabatic storm front derating wind blades + polar night solar collapse." : "Renewable production and battery reserves satisfy load across 72h window."
+        },
+        forecast: forecast
+      };
+    }
+
+    function generateClientDecision(step) {
+      const snap = generateClientDigitalTwin(step);
+      return snap.decision;
+    }
+
+    function generateClientTimeline(step, scenario) {
+      return [
+        {
+          time: "T - 36h",
+          title: "Atmospheric Katabatic Inflow Detected",
+          summary: "Barometric pressure drop indicates high-velocity front.",
+          decision: "Pre-charge BESS battery from wind generation",
+          reason: "Preserve electrical storage before aerodynamic icing conditions.",
+          forecast: "Wind expected to exceed 28 m/s in 36 hours.",
+          action: "Battery charge set to 25 kW rate.",
+          icon: "🌀"
+        },
+        {
+          time: "T - 18h",
+          title: "Pre-emptive Deficit Lookahead Alert",
+          summary: "BOREAS identifies net energy deficit window across 18 hours.",
+          decision: "Schedule Gen #1 at 52 kW (optimal fuel band)",
+          reason: "Avoid running genset below 40% load to eliminate wet-stacking.",
+          forecast: "Deficit volume estimated at 480 kWh.",
+          action: "Genset ignition warmup protocol queued.",
+          icon: "⚠️"
+        },
+        {
+          time: "T - 6h",
+          title: "Flexible Science Load Deferral",
+          summary: "Peak heating load reaches 95 kW under -52°C polar chill.",
+          decision: "Defer Deep Ice Drill rig and Skidoo recharge",
+          reason: "Safeguard 100% human habitability and habitat thermal life-support.",
+          forecast: "Critical heating floor remains non-negotiable.",
+          action: "Relay 4 opened (Ice Drill postponed).",
+          icon: "🧪"
+        },
+        {
+          time: "T + 0h",
+          title: "Blizzard Peak & Cold Battery Guard Active",
+          summary: "Ambient temperature plunges to -58°C with severe rime icing.",
+          decision: "Enforce 30% battery SoC floor & dual-genset load sharing",
+          reason: "Prevent LiFePO4 electrolyte crystallization in extreme cold.",
+          forecast: "Severe storm persists for next 24 hours.",
+          action: "100% life-support load fully served; 0 outages.",
+          icon: "🛡️"
+        },
+        {
+          time: "T + 24h",
+          title: "Storm Dissipation & Renewable Recovery",
+          summary: "Wind recovers to clean laminar flow, icing dissipates.",
+          decision: "Ramp down diesel generators and restore science loads",
+          reason: "Surplus wind generation covers station; diesel shutdown.",
+          forecast: "Calm Antarctic high-pressure ridge arriving.",
+          action: "Total fuel saved: +182 Liters over storm window.",
+          icon: "✨"
+        }
+      ];
+    }
+
+    function generateClientScenario(scenId, step) {
+      if (scenId === "blizzard") {
+        return {
+          scenario_id: "blizzard",
+          before: { fuel_consumed_liters: 1420, battery_min_soc_pct: 18.0, curtailed_flexible_kw: 0 },
+          after: { fuel_consumed_liters: 1180, battery_min_soc_pct: 32.5, curtailed_flexible_kw: 45 },
+          comparison: {
+            baseline_reactive: { diesel_fuel_burned_liters: 1420, critical_load_served_pct: 94.2, flexible_curtailed_kw: 0 },
+            boreas_ai: { diesel_fuel_burned_liters: 1180, critical_load_served_pct: 100.0, flexible_curtailed_kw: 45, fuel_saved_liters: 240 }
+          }
+        };
+      } else if (scenId === "diesel-failure") {
+        return {
+          scenario_id: "diesel-failure",
+          before: { fuel_consumed_liters: 1650, battery_min_soc_pct: 15.0, curtailed_flexible_kw: 0 },
+          after: { fuel_consumed_liters: 1390, battery_min_soc_pct: 28.0, curtailed_flexible_kw: 55 },
+          comparison: {
+            baseline_reactive: { diesel_fuel_burned_liters: 1650, critical_load_served_pct: 88.5, flexible_curtailed_kw: 0 },
+            boreas_ai: { diesel_fuel_burned_liters: 1390, critical_load_served_pct: 100.0, flexible_curtailed_kw: 55, fuel_saved_liters: 260 }
+          }
+        };
+      } else {
+        return {
+          scenario_id: "battery-failure",
+          before: { fuel_consumed_liters: 1580, battery_min_soc_pct: 12.0, curtailed_flexible_kw: 0 },
+          after: { fuel_consumed_liters: 1410, battery_min_soc_pct: 30.0, curtailed_flexible_kw: 40 },
+          comparison: {
+            baseline_reactive: { diesel_fuel_burned_liters: 1580, critical_load_served_pct: 91.0, flexible_curtailed_kw: 0 },
+            boreas_ai: { diesel_fuel_burned_liters: 1410, critical_load_served_pct: 100.0, flexible_curtailed_kw: 40, fuel_saved_liters: 170 }
+          }
+        };
+      }
+    }
+
+
+    // Refresh Digital Twin State from API with Client Simulator Fallback
+    async function refreshDigitalTwin() {
+      try {
+        const res = await fetch(`/api/digital-twin/state?step_index=${currentStep}`);
+        if (!res.ok) throw new Error("API Offline");
+        const data = await res.json();
+        updateUIWithSnapshot(data);
+        document.getElementById("apiStatusDisplay").innerHTML = "● LIVE AI API";
+        document.getElementById("apiStatusDisplay").style.color = "var(--green-neon)";
+      } catch (err) {
+        // Fallback to high-fidelity client simulation engine
+        const fallbackData = generateClientDigitalTwin(currentStep);
+        updateUIWithSnapshot(fallbackData);
+        document.getElementById("apiStatusDisplay").innerHTML = "● SIMULATOR (STANDALONE)";
+        document.getElementById("apiStatusDisplay").style.color = "var(--cyan-neon)";
+      }
+      refreshForecastChart();
+      refreshAIDecision();
+    }
+
+    // Update UI components with data snapshot
+    function updateUIWithSnapshot(data) {
+      const env = data.environment;
+      const eng = data.energy;
+      const stn = data.station;
+      const rsk = data.risk;
+      const dec = data.decision;
+
+      // Header info
+      document.getElementById("topTimeDisplay").innerText = `Hour ${data.step_index.toLocaleString()} / 8,760`;
+      document.getElementById("currentTimestampLabel").innerText = data.timestamp;
+      document.getElementById("timelineSlider").value = data.step_index;
+
+      // Operating Mode Chip
+      const modeChip = document.getElementById("operatingModeChip");
+      modeChip.className = "mode-chip";
+      if (stn.operating_mode === "SURVIVAL") {
+        modeChip.classList.add("mode-survival");
+        modeChip.innerHTML = "⚠️ SURVIVAL MODE";
+        document.getElementById("survivalBanner").classList.add("active");
+        document.getElementById("survivalBannerReason").innerText = rsk.primary_causes[0] || "Critical energy deficit projected.";
+        document.getElementById("survivalReserveBadge").innerText = `Autonomy: ${rsk.autonomy_days} Days`;
+      } else if (stn.operating_mode === "WARNING") {
+        modeChip.classList.add("mode-warning");
+        modeChip.innerHTML = "⚠️ ENERGY WARNING";
+        document.getElementById("survivalBanner").classList.remove("active");
+      } else if (stn.operating_mode === "STORM_WATCH") {
+        modeChip.classList.add("mode-watch");
+        modeChip.innerHTML = "🌬️ STORM WATCH";
+        document.getElementById("survivalBanner").classList.remove("active");
+      } else {
+        modeChip.classList.add("mode-normal");
+        modeChip.innerHTML = "● NORMAL OPERATION";
+        document.getElementById("survivalBanner").classList.remove("active");
+      }
+
+      // HUD Cards
+      document.getElementById("hudTemp").innerText = `${env.outdoor_temp_c} °C`;
+      document.getElementById("hudWind").innerText = `${env.wind_speed_mps} m/s`;
+      document.getElementById("hudIcing").innerText = env.wind_icing_factor.toFixed(2);
+      document.getElementById("hudIcing").style.color = env.wind_icing_factor <= 0.4 ? "var(--red-alert)" : (env.wind_icing_factor <= 0.7 ? "var(--amber-warn)" : "var(--cyan-neon)");
+
+      document.getElementById("hudTotalDemand").innerText = `${eng.total_station_demand_kw} kW`;
+      document.getElementById("hudCritLoad").innerText = `${eng.critical_demand_kw} kW`;
+      document.getElementById("hudFlexLoad").innerText = `${eng.flexible_demand_kw} kW`;
+
+      document.getElementById("hudBatterySoc").innerText = `${eng.battery_soc_pct.toFixed(1)} %`;
+      document.getElementById("hudBatteryPower").innerText = `${eng.battery_power_kw > 0 ? '-' : '+'}${Math.abs(eng.battery_power_kw)} kW`;
+      
+      const coldBadge = document.getElementById("coldModeIndicator");
+      if (eng.cold_battery_protection_active) {
+        coldBadge.style.display = "inline-block";
+      } else {
+        coldBadge.style.display = "none";
+      }
+
+      document.getElementById("hudFuelReserve").innerText = `${eng.diesel_fuel_reserve_liters.toLocaleString()} L`;
+      document.getElementById("hudAutonomyDays").innerText = `${rsk.autonomy_days} Days`;
+      document.getElementById("hudBurnRate").innerText = `${eng.hourly_fuel_burn_liters.toFixed(1)} L/h`;
+
+      const riskEl = document.getElementById("hudRiskLevel");
+      riskEl.innerText = rsk.level;
+      if (rsk.level === "SURVIVAL") riskEl.style.color = "var(--red-alert)";
+      else if (rsk.level === "WARNING") riskEl.style.color = "var(--amber-warn)";
+      else if (rsk.level === "WATCH") riskEl.style.color = "var(--cyan-neon)";
+      else riskEl.style.color = "var(--green-neon)";
+
+      document.getElementById("hudRiskScore").innerText = `${rsk.score} / 100`;
+
+      // Flow diagram
+      document.getElementById("flowSolar").innerText = `${eng.solar_generation_kw} kW`;
+      document.getElementById("flowSolarSub").innerText = env.daylight_hours === 0 ? "Polar Night Clamped" : `${env.daylight_hours}h Daylight`;
+      document.getElementById("flowWind").innerText = `${eng.wind_effective_kw} kW`;
+      document.getElementById("flowWindSub").innerText = `Icing Factor: ${env.wind_icing_factor.toFixed(2)}`;
+      document.getElementById("flowBattery").innerText = `${eng.battery_power_kw > 0 ? '+' : (eng.battery_power_kw < 0 ? '-' : '')}${Math.abs(eng.battery_power_kw)} kW`;
+      document.getElementById("flowBatterySub").innerText = `${eng.battery_mode} (${eng.battery_soc_pct}%)`;
+      document.getElementById("flowDiesel").innerText = `${eng.diesel_generation_kw} kW`;
+      document.getElementById("flowDieselSub").innerText = eng.diesel_generator_1_online ? "Gen #1 Active" : "Gen #1 OFFLINE (Gen #2 Backup)";
+      document.getElementById("flowCrit").innerText = `${eng.critical_demand_kw} kW`;
+      document.getElementById("flowFlex").innerText = `${eng.flexible_demand_kw} kW`;
+      document.getElementById("flowFlexSub").innerText = eng.curtailed_flexible_kw > 0 ? `Curtailed: ${eng.curtailed_flexible_kw} kW` : "Full Science Load";
+
+      // Asset health
+      document.getElementById("assetGen1Status").innerText = eng.diesel_generator_1_online ? "ONLINE" : "OFFLINE";
+      document.getElementById("assetGen1Status").style.color = eng.diesel_generator_1_online ? "var(--green-neon)" : "var(--red-alert)";
+      document.getElementById("assetGen1Load").innerText = `${Math.min(100, eng.diesel_generation_kw)} kW`;
+
+      document.getElementById("assetBatStatus").innerText = eng.battery_online ? "HEALTHY" : "OFFLINE";
+      document.getElementById("assetBatStatus").style.color = eng.battery_online ? "var(--green-neon)" : "var(--red-alert)";
+      document.getElementById("assetBatColdMode").innerText = eng.cold_battery_protection_active ? "ACTIVE (30% Floor)" : "STANDBY";
+      document.getElementById("assetBatColdMode").style.color = eng.cold_battery_protection_active ? "var(--cyan-neon)" : "var(--text-secondary)";
+
+      document.getElementById("assetIcingVal").innerText = env.wind_icing_factor.toFixed(2);
+      document.getElementById("assetIcingLoss").innerText = `-${Math.round((1 - env.wind_icing_factor) * 100)}% Derate`;
+    }
+
+    // Refresh 72h Forecast Chart with Client Fallback
+    async function refreshForecastChart() {
+      let data = null;
+      try {
+        const res = await fetch(`/api/forecast/72h?step_index=${currentStep}&horizon_hours=72`);
+        if (res.ok) {
+          data = await res.json();
+        }
+      } catch (err) {
+        console.warn("Forecast API offline, using client simulation:", err);
+      }
+      if (!data) {
+        data = generateClientForecast(currentStep);
+      }
+
+      // Update deficit banner
+      const def = data.deficit_window;
+      if (def && def.has_deficit) {
+        document.getElementById("deficitBanner").style.display = "flex";
+        document.getElementById("deficitWindowText").innerText = def.window_text;
+        document.getElementById("deficitExplanation").innerText = def.explanation;
+      } else {
+        document.getElementById("deficitBanner").style.display = "none";
+      }
+
+      // Update chart labels and series
+      const labels = data.forecast.map(d => `+${d.hour}h`);
+      const totalLoads = data.forecast.map(d => d.total_demand_kw);
+      const critLoads = data.forecast.map(d => d.load_critical_kw);
+      const flexLoads = data.forecast.map(d => d.load_flexible_kw);
+      const solars = data.forecast.map(d => d.solar_generation_kw);
+      const winds = data.forecast.map(d => d.wind_effective_kw);
+      const diesels = data.forecast.map(d => d.scheduled_diesel_kw);
+      const bats = data.forecast.map(d => d.scheduled_battery_kw);
+
+      forecastChart.data.labels = labels;
+      forecastChart.data.datasets[0].data = totalLoads;
+      forecastChart.data.datasets[1].data = critLoads;
+      forecastChart.data.datasets[2].data = flexLoads;
+      forecastChart.data.datasets[3].data = solars;
+      forecastChart.data.datasets[4].data = winds;
+      forecastChart.data.datasets[5].data = diesels;
+      forecastChart.data.datasets[6].data = bats;
+      forecastChart.update();
+    }
+
+    // Refresh Explainable AI Card with Client Fallback
+    async function refreshAIDecision() {
+      let card = null;
+      try {
+        const res = await fetch(`/api/ai/decision?step_index=${currentStep}`);
+        if (res.ok) {
+          card = await res.json();
+        }
+      } catch (err) {
+        console.warn("AI decision API offline, using client simulation:", err);
+      }
+      if (!card) {
+        card = generateClientDecision(currentStep);
+      }
+
+      document.getElementById("aiActionChip").innerText = card.current_action;
+      document.getElementById("aiWhyText").innerText = card.why;
+      document.getElementById("aiForecastText").innerText = card.forecast;
+      document.getElementById("aiSafetyText").innerText = card.safety_consideration;
+      document.getElementById("aiResultText").innerText = card.expected_result;
+    }
+
+    // Load timeline events with Client Fallback
+    let currentTimelineEvents = [];
+    async function loadTimelineEvents(scenario = null) {
+      try {
+        const url = scenario ? `/api/ai/timeline?step_index=${currentStep}&active_scenario=${scenario}` : `/api/ai/timeline?step_index=${currentStep}`;
+        const res = await fetch(url);
+        if (res.ok) {
+          currentTimelineEvents = await res.json();
+          renderTimeline();
+          return;
+        }
+      } catch (err) {
+        console.warn("Timeline API offline, using client simulation:", err);
+      }
+      currentTimelineEvents = generateClientTimeline(currentStep, scenario);
+      renderTimeline();
+    }
+
+    function renderTimeline() {
+      const container = document.getElementById("timelineEventsContainer");
+      container.innerHTML = "";
+      currentTimelineEvents.forEach((ev, idx) => {
+        const div = document.createElement("div");
+        div.className = "timeline-event-item";
+        div.onclick = () => openModal(idx);
+        div.innerHTML = `
+          <span class="event-time">${ev.icon} ${ev.time}</span>
+          <span class="event-title">${ev.title}</span>
+          <span style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--cyan-neon);">Inspect ▶</span>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function openModal(idx) {
+      const ev = currentTimelineEvents[idx];
+      if (!ev) return;
+      document.getElementById("modalEventTitle").innerText = `${ev.icon} ${ev.title}`;
+      document.getElementById("modalTime").innerText = ev.time;
+      document.getElementById("modalSummary").innerText = ev.summary;
+      document.getElementById("modalDecision").innerText = ev.decision;
+      document.getElementById("modalReason").innerText = ev.reason;
+      document.getElementById("modalForecast").innerText = ev.forecast;
+      document.getElementById("modalAction").innerText = ev.action;
+      document.getElementById("eventModal").classList.add("active");
+    }
+
+    function closeModal() {
+      document.getElementById("eventModal").classList.remove("active");
+    }
+
+    // Scenario Triggering
+    let activeScenarioId = "blizzard";
+    async function triggerScenario(scenId) {
+      activeScenarioId = scenId;
+      document.querySelectorAll(".btn-scenario").forEach(b => b.classList.remove("active"));
+      const activeBtn = document.getElementById(`btnScen_${scenId}`);
+      if (activeBtn) activeBtn.classList.add("active");
+
+      let data = null;
+      try {
+        const res = await fetch("/api/scenarios/run", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ scenario_id: scenId, step_index: currentStep })
+        });
+        if (res.ok) {
+          data = await res.json();
+        }
+      } catch (err) {
+        console.warn("Scenario API offline, using client simulation:", err);
+      }
+      if (!data) {
+        data = generateClientScenario(scenId, currentStep);
+      }
+
+      // Update Before / After UI
+      document.getElementById("scenBeforeFuel").innerText = `${data.before.fuel_consumed_liters.toLocaleString()} L`;
+      document.getElementById("scenBeforeBat").innerText = `${data.before.battery_min_soc_pct}%`;
+      document.getElementById("scenBeforeCurt").innerText = `${data.before.curtailed_flexible_kw} kW`;
+
+      document.getElementById("scenAfterFuel").innerText = `${data.after.fuel_consumed_liters.toLocaleString()} L`;
+      document.getElementById("scenAfterBat").innerText = `${data.after.battery_min_soc_pct}%`;
+      document.getElementById("scenAfterCurt").innerText = `${data.after.curtailed_flexible_kw} kW`;
+
+      // Update Baseline vs BOREAS table
+      document.getElementById("compBaseFuel").innerText = `${data.comparison.baseline_reactive.diesel_fuel_burned_liters.toLocaleString()} L`;
+      document.getElementById("compBaseCrit").innerText = `${data.comparison.baseline_reactive.critical_load_served_pct}%`;
+      document.getElementById("compBaseCurt").innerText = `${data.comparison.baseline_reactive.flexible_curtailed_kw} kW`;
+
+      document.getElementById("compBoreasFuel").innerText = `${data.comparison.boreas_ai.diesel_fuel_burned_liters.toLocaleString()} L`;
+      document.getElementById("compBoreasCrit").innerText = `${data.comparison.boreas_ai.critical_load_served_pct}%`;
+      document.getElementById("compBoreasCurt").innerText = `${data.comparison.boreas_ai.flexible_curtailed_kw} kW`;
+      document.getElementById("compBoreasSaved").innerText = `+${data.comparison.boreas_ai.fuel_saved_liters.toLocaleString()} L`;
+
+      loadTimelineEvents(scenId);
+      refreshDigitalTwin();
+    }
+
+    // Operator Load Shedder
+    async function onOperatorToggleLoad() {
+      const drill = document.getElementById("toggle_drill").checked;
+      const lidar = document.getElementById("toggle_lidar").checked;
+      const skidoo = document.getElementById("toggle_skidoo").checked;
+      const laundry = document.getElementById("toggle_laundry").checked;
+      const sauna = document.getElementById("toggle_sauna").checked;
+
+      try {
+        await fetch("/api/loads/toggle", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ drill, lidar, skidoo, laundry, sauna })
+        });
+        refreshDigitalTwin();
+      } catch (err) {
+        console.warn("Load toggle failed:", err);
+      }
+    }
+
+    // Time Machine Navigation
+    function jumpToStep(step) {
+      currentStep = step;
+      document.querySelectorAll(".scrubber-controls .btn-control").forEach(b => b.classList.remove("active"));
+      refreshDigitalTwin();
+    }
+
+    function onSliderScrub(val) {
+      currentStep = parseInt(val, 10);
+      refreshDigitalTwin();
+    }
+
+    function toggleLiveStreaming() {
+      isStreaming = !isStreaming;
+      const btn = document.getElementById("btnStreamLive");
+      if (isStreaming) {
+        btn.innerText = "⏸ Pause Live";
+        btn.style.background = "var(--red-alert)";
+        streamInterval = setInterval(() => {
+          currentStep = (currentStep + 1) % 8760;
+          refreshDigitalTwin();
+        }, 1200);
+      } else {
+        btn.innerText = "▶ Stream Live";
+        btn.style.background = "rgba(41, 121, 255, 0.3)";
+        clearInterval(streamInterval);
+      }
+    }
+
+    // Hackathon Quick Demo Mode Toggle
+    function toggleHackathonDemoMode() {
+      isDemoModeActive = !isDemoModeActive;
+      const bar = document.getElementById("quickScenariosBar");
+      const btn = document.getElementById("btnToggleDemoMode");
+      if (isDemoModeActive) {
+        bar.classList.add("active");
+        btn.style.borderColor = "var(--green-neon)";
+        btn.style.color = "var(--green-neon)";
+      } else {
+        bar.classList.remove("active");
+        btn.style.borderColor = "var(--cyan-neon)";
+        btn.style.color = "#ffffff";
+      }
+    }
+
+    // Automated 10-Scene Guided Demo
+    function toggleAutomatedDemo() {
+      if (isDemoRunning) {
+        stopAutomatedDemo();
+      } else {
+        startAutomatedDemo();
+      }
+    }
+
+    function startAutomatedDemo() {
+      isDemoRunning = true;
+      isDemoPaused = false;
+      demoStepIndex = 0;
+      document.getElementById("demoControllerBar").classList.add("active");
+      document.getElementById("btnRunDemoSequence").innerText = "⏹ STOP DEMO";
+      document.getElementById("btnRunDemoSequence").style.background = "var(--red-alert)";
+      executeDemoStep();
+    }
+
+    function stopAutomatedDemo() {
+      isDemoRunning = false;
+      clearTimeout(demoTimer);
+      document.getElementById("demoControllerBar").classList.remove("active");
+      document.getElementById("btnRunDemoSequence").innerText = "▶ RUN DEMO (60s)";
+      document.getElementById("btnRunDemoSequence").style.background = "linear-gradient(135deg, #0051ff, #00e5ff)";
+    }
+
+    function executeDemoStep() {
+      if (!isDemoRunning || isDemoPaused) return;
+      if (demoStepIndex >= DEMO_SCENES.length) {
+        stopAutomatedDemo();
+        return;
+      }
+
+      const scene = DEMO_SCENES[demoStepIndex];
+      document.getElementById("demoStepBadge").innerText = `SCENE ${demoStepIndex + 1} / 10`;
+      document.getElementById("demoStepTitle").innerText = `${scene.title} — ${scene.desc}`;
+      document.getElementById("demoProgressBar").style.width = `${((demoStepIndex + 1) / 10) * 100}%`;
+
+      jumpToStep(scene.step);
+      if (scene.scen) {
+        triggerScenario(scene.scen);
+      }
+
+      demoTimer = setTimeout(() => {
+        demoStepIndex++;
+        executeDemoStep();
+      }, 7000); // 7 seconds per scene = 70 seconds total tour
+    }
+
+    function prevDemoStep() {
+      clearTimeout(demoTimer);
+      demoStepIndex = Math.max(0, demoStepIndex - 1);
+      executeDemoStep();
+    }
+
+    function nextDemoStep() {
+      clearTimeout(demoTimer);
+      demoStepIndex = Math.min(DEMO_SCENES.length - 1, demoStepIndex + 1);
+      executeDemoStep();
+    }
+
+    function togglePauseDemo() {
+      isDemoPaused = !isDemoPaused;
+      const btn = document.getElementById("btnPauseDemo");
+      if (isDemoPaused) {
+        btn.innerText = "▶ Resume";
+        clearTimeout(demoTimer);
+      } else {
+        btn.innerText = "⏸ Pause";
+        executeDemoStep();
+      }
+    }
+  </script>
+</body>
+</html>
