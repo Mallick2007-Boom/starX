@@ -1101,6 +1101,589 @@
       color: var(--text-muted);
       font-family: var(--font-mono);
     }
+  
+    /* =========================================================================
+       COMPREHENSIVE MOBILE & RESPONSIVE OPTIMIZATION SYSTEM
+       ========================================================================= */
+
+    /* Touch optimizations */
+    button, input[type="range"], input[type="checkbox"], .timeline-event-item, .hud-card {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-top: 0.35rem;
+    }
+
+    /* Mobile Floating Dock (Hidden on Desktop) */
+    .mobile-nav-dock {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 1500;
+      background: rgba(9, 18, 32, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border-bright);
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+      padding: 0.35rem 0.5rem calc(0.35rem + env(safe-area-inset-bottom, 0px)) 0.5rem;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    .nav-dock-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.15rem;
+      padding: 0.35rem 0.6rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: var(--font-body);
+      transition: all 0.2s ease;
+      min-width: 52px;
+    }
+
+    .nav-dock-btn:hover, .nav-dock-btn:active {
+      color: var(--cyan-neon);
+    }
+
+    .nav-dock-btn.active {
+      color: var(--cyan-neon);
+      background: rgba(0, 240, 255, 0.12);
+    }
+
+    .dock-icon {
+      font-size: 1.15rem;
+      line-height: 1;
+    }
+
+    .dock-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* --- Tablet Breakpoint (1024px and below) --- */
+    @media (max-width: 1024px) {
+      main {
+        padding: 1.2rem 1.25rem 4rem 1.25rem;
+        gap: 1.2rem;
+      }
+      .hud-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+      }
+      .flow-diagram-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.85rem;
+        padding: 1rem;
+      }
+      .flow-bus {
+        grid-column: span 2;
+        padding: 0.75rem 0.5rem;
+      }
+      .ai-row {
+        grid-template-columns: 1fr;
+      }
+      .scenario-buttons-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .comparison-grid {
+        grid-template-columns: 1fr;
+      }
+      .health-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .bottom-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* --- Mobile & Phablet Breakpoint (768px and below) --- */
+    @media (max-width: 768px) {
+      body {
+        font-size: 14px;
+      }
+
+      /* Sticky Header Stacking */
+      header {
+        padding: 0.75rem 1rem;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+      }
+
+      .brand-section {
+        justify-content: flex-start;
+        gap: 0.75rem;
+      }
+
+      .station-badge {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        border-radius: 10px;
+      }
+
+      .station-badge svg {
+        width: 22px;
+        height: 22px;
+      }
+
+      .brand-title h1 {
+        font-size: 1.15rem;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+
+      .badge-sub {
+        font-size: 0.65rem;
+        padding: 0.12rem 0.4rem;
+      }
+
+      .brand-title p {
+        font-size: 0.68rem;
+        line-height: 1.3;
+      }
+
+      .top-telemetry-strip {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.45rem;
+        width: 100%;
+      }
+
+      .telemetry-chip {
+        padding: 0.35rem 0.55rem;
+        font-size: 0.72rem;
+        justify-content: space-between;
+      }
+
+      .telemetry-chip .val {
+        font-size: 0.75rem;
+      }
+
+      .mode-chip {
+        grid-column: span 2;
+        text-align: center;
+        justify-content: center;
+        padding: 0.4rem 0.6rem;
+        font-size: 0.75rem;
+      }
+
+      .btn-header {
+        grid-column: span 1;
+        width: 100%;
+        justify-content: center;
+        padding: 0.5rem 0.6rem;
+        font-size: 0.76rem;
+        min-height: 42px;
+      }
+
+      /* Main container spacing with bottom dock allowance */
+      main {
+        padding: 0.85rem 0.75rem 5.5rem 0.75rem;
+        gap: 0.95rem;
+      }
+
+      /* Show mobile bottom dock */
+      .mobile-nav-dock {
+        display: flex;
+      }
+
+      /* Survival banner */
+      .emergency-banner-content {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+      }
+
+      .emergency-left {
+        gap: 0.75rem;
+      }
+
+      .emergency-icon {
+        font-size: 1.8rem;
+      }
+
+      .emergency-text h3 {
+        font-size: 1.05rem;
+      }
+
+      .emergency-text p {
+        font-size: 0.78rem;
+      }
+
+      .emergency-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.4rem;
+        width: 100%;
+      }
+
+      .action-badge {
+        font-size: 0.7rem;
+        padding: 0.35rem 0.5rem;
+        text-align: center;
+      }
+
+      /* Quick Scenario & Demo Bars */
+      .quick-scenarios-bar {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.75rem 0.85rem;
+        gap: 0.6rem;
+      }
+
+      .scenario-btn-group {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.4rem;
+        width: 100%;
+      }
+
+      .btn-scenario-quick {
+        min-height: 38px;
+        text-align: center;
+        padding: 0.45rem 0.5rem;
+        font-size: 0.74rem;
+      }
+
+      .demo-controller-bar {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.75rem 0.85rem;
+        gap: 0.65rem;
+      }
+
+      .demo-step-info {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.4rem;
+      }
+
+      .demo-progress-track {
+        width: 100%;
+        height: 6px;
+      }
+
+      .demo-controller-bar > div:last-child {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 0.4rem;
+        width: 100%;
+      }
+
+      /* Scrubber Panel */
+      .scrubber-panel {
+        padding: 0.85rem 1rem;
+        gap: 0.65rem;
+      }
+
+      .scrubber-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+      }
+
+      .scrubber-title {
+        font-size: 0.82rem;
+      }
+
+      .scrubber-controls {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 6px;
+        gap: 0.4rem;
+        scrollbar-width: none;
+      }
+
+      .scrubber-controls::-webkit-scrollbar {
+        display: none;
+      }
+
+      .btn-control {
+        flex-shrink: 0;
+        min-height: 36px;
+        padding: 0.4rem 0.7rem;
+        font-size: 0.74rem;
+      }
+
+      .scrubber-slider-wrap {
+        gap: 0.6rem;
+      }
+
+      .timeline-slider {
+        height: 8px;
+      }
+
+      .timeline-slider::-webkit-slider-thumb {
+        width: 26px;
+        height: 26px;
+      }
+
+      .btn-stream {
+        min-height: 38px;
+        padding: 0.45rem 0.8rem;
+        font-size: 0.75rem;
+        white-space: nowrap;
+      }
+
+      /* ROW 1: HUD Cards */
+      .hud-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+      }
+
+      .hud-grid > .hud-card:last-child {
+        grid-column: span 2;
+      }
+
+      .hud-card {
+        padding: 0.85rem 1rem;
+        border-radius: 12px;
+      }
+
+      .hud-card-value {
+        font-size: 1.55rem;
+      }
+
+      .hud-card-title {
+        font-size: 0.66rem;
+      }
+
+      .hud-card-sub {
+        font-size: 0.72rem;
+      }
+
+      /* ROW 2: Energy Flow */
+      .flow-panel {
+        padding: 0.85rem 1rem;
+      }
+
+      .flow-diagram-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.6rem;
+        padding: 0.75rem;
+      }
+
+      .flow-bus {
+        grid-column: span 2;
+        padding: 0.65rem 0.5rem;
+        font-size: 0.78rem;
+      }
+
+      .flow-node {
+        padding: 0.65rem 0.75rem;
+      }
+
+      .flow-node-title {
+        font-size: 0.72rem;
+      }
+
+      .flow-node-val {
+        font-size: 1.2rem;
+      }
+
+      .flow-node-sub {
+        font-size: 0.66rem;
+      }
+
+      /* ROW 3: 72h Forecast Chart */
+      .forecast-panel {
+        padding: 0.85rem 1rem;
+      }
+
+      .deficit-window-banner {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.35rem;
+        font-size: 0.76rem;
+        padding: 0.55rem 0.75rem;
+      }
+
+      .chart-wrapper {
+        height: 230px;
+      }
+
+      /* ROW 4: AI & Rules */
+      .ai-card, .rules-comparison-panel {
+        padding: 0.95rem 1rem;
+        border-radius: 12px;
+        gap: 0.75rem;
+      }
+
+      .action-header {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .action-chip {
+        font-size: 0.76rem;
+        padding: 0.25rem 0.6rem;
+      }
+
+      .ai-field-val {
+        font-size: 0.82rem;
+      }
+
+      .rules-flow-box {
+        padding: 0.65rem 0.85rem;
+        font-size: 0.76rem;
+      }
+
+      /* ROW 5: Scenario Simulator */
+      .what-if-panel {
+        padding: 0.85rem 1rem;
+      }
+
+      .scenario-buttons-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
+      }
+
+      .btn-scenario {
+        padding: 0.6rem 0.75rem;
+        min-height: 48px;
+        font-size: 0.76rem;
+      }
+
+      /* ROW 6: Asset Health */
+      .health-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+
+      .asset-card {
+        padding: 0.85rem 1rem;
+      }
+
+      /* ROW 7: Timeline & Shedder */
+      .timeline-panel, .shedder-panel {
+        padding: 0.85rem 1rem;
+      }
+
+      .switch-item {
+        padding: 0.65rem 0.85rem;
+        min-height: 46px;
+        font-size: 0.8rem;
+      }
+
+      .toggle-checkbox {
+        width: 22px;
+        height: 22px;
+      }
+
+      /* Native-like Bottom Sheet Modal on Mobile */
+      .modal-overlay {
+        padding: 0;
+        align-items: flex-end;
+      }
+
+      .modal-box {
+        border-radius: 20px 20px 0 0;
+        max-height: 88vh;
+        overflow-y: auto;
+        width: 100%;
+        padding: 1.25rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom, 12px)) 1.25rem;
+        border-bottom: none;
+        animation: slide-up-mobile-sheet 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      @keyframes slide-up-mobile-sheet {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+      }
+
+      footer {
+        padding: 1rem 1rem 4.5rem 1rem;
+        font-size: 0.7rem;
+      }
+    }
+
+    /* --- Compact Smartphone Breakpoint (480px and below) --- */
+    @media (max-width: 480px) {
+      .brand-title h1 {
+        font-size: 1.05rem;
+      }
+
+      .brand-title p {
+        font-size: 0.65rem;
+      }
+
+      .top-telemetry-strip {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .hud-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hud-grid > .hud-card:last-child {
+        grid-column: auto;
+      }
+
+      .flow-diagram-container {
+        grid-template-columns: 1fr;
+      }
+
+      .flow-bus {
+        grid-column: auto;
+      }
+
+      .scenario-buttons-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .scenario-btn-group {
+        grid-template-columns: 1fr;
+      }
+
+      .emergency-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-wrapper {
+        height: 200px;
+      }
+
+      .hud-card-value {
+        font-size: 1.4rem;
+      }
+
+      .panel-title {
+        font-size: 0.92rem;
+      }
+
+      .timeline-event-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+      }
+
+      .timeline-event-item .event-time {
+        min-width: auto;
+      }
+
+      .timeline-event-item > span:last-child {
+        align-self: flex-end;
+        margin-top: -0.2rem;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -1217,7 +1800,7 @@
     </section>
 
     <!-- ROW 1: CRITICAL STATUS HUD -->
-    <section class="hud-grid">
+    <section class="hud-grid" id="sec_hud">
       <!-- Card 1: Environment -->
       <div class="hud-card">
         <div class="hud-card-header">
@@ -1285,7 +1868,7 @@
     </section>
 
     <!-- ROW 2: DYNAMIC ENERGY FLOW DIAGRAM -->
-    <section class="flow-panel">
+    <section class="flow-panel" id="sec_flow">
       <div class="panel-header">
         <div class="panel-title">
           <span>🔄 REAL-TIME MICROGRID POWER ROUTING</span>
@@ -1345,7 +1928,7 @@
     </section>
 
     <!-- ROW 3: 72-HOUR FORECAST -->
-    <section class="forecast-panel">
+    <section class="forecast-panel" id="sec_forecast">
       <div class="panel-header">
         <div class="panel-title">
           <span>📈 72-HOUR MULTI-CHANNEL PREDICTIVE DISPATCH FORECAST</span>
@@ -1438,7 +2021,7 @@
     </section>
 
     <!-- ROW 5: WHAT-IF SCENARIO SIMULATOR -->
-    <section class="what-if-panel">
+    <section class="what-if-panel" id="sec_scenarios">
       <div class="panel-header">
         <div class="panel-title">
           <span>🧪 WHAT-IF SCENARIO STRESS SIMULATOR</span>
@@ -1527,6 +2110,7 @@
 
         <div class="metrics-box">
           <h4>BENCHMARK: BASELINE vs BOREAS</h4>
+          <div class="table-responsive">
           <table class="comp-table">
             <thead>
               <tr>
@@ -1558,6 +2142,7 @@
               </tr>
             </tbody>
           </table>
+          </div>
         </div>
       </div>
     </section>
@@ -1590,7 +2175,7 @@
     </section>
 
     <!-- ROW 7: OPERATOR TIMELINE & DEMAND-SIDE SHEDDER -->
-    <section class="bottom-row">
+    <section class="bottom-row" id="sec_shedder">
       <!-- Operator Decision Timeline -->
       <div class="timeline-panel">
         <div class="panel-header">
@@ -1660,6 +2245,31 @@
     </div>
   </div>
 
+
+  <!-- Mobile Floating Navigation Dock -->
+  <nav class="mobile-nav-dock" id="mobileNavDock">
+    <button class="nav-dock-btn active" onclick="scrollToSection('sec_hud', this)">
+      <span class="dock-icon">📊</span>
+      <span class="dock-label">HUD</span>
+    </button>
+    <button class="nav-dock-btn" onclick="scrollToSection('sec_flow', this)">
+      <span class="dock-icon">🔄</span>
+      <span class="dock-label">Flow</span>
+    </button>
+    <button class="nav-dock-btn" onclick="scrollToSection('sec_forecast', this)">
+      <span class="dock-icon">📈</span>
+      <span class="dock-label">Forecast</span>
+    </button>
+    <button class="nav-dock-btn" onclick="scrollToSection('sec_scenarios', this)">
+      <span class="dock-icon">🧪</span>
+      <span class="dock-label">Scenarios</span>
+    </button>
+    <button class="nav-dock-btn" onclick="scrollToSection('sec_shedder', this)">
+      <span class="dock-icon">🎛️</span>
+      <span class="dock-label">Loads</span>
+    </button>
+  </nav>
+
   <footer>
     BOREAS AI ENERGY COMMANDER • ANTARCTIC RESEARCH RESILIENCE PLATFORM • SIMULATION & DIGITAL TWIN
   </footer>
@@ -1697,6 +2307,19 @@
       loadTimelineEvents();
       runScenarioRequest("blizzard"); // load initial scenario comparison
     });
+
+
+    // Mobile Dock Navigation Scroll
+    function scrollToSection(id, btn) {
+      const el = document.getElementById(id);
+      if (el) {
+        const yOffset = -70; // Header height compensation
+        const y = el.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({ top: y, behavior: 'smooth' });
+        document.querySelectorAll('.nav-dock-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+      }
+    }
 
     // Chart.js Initialization
     function initChart() {
@@ -1788,10 +2411,12 @@
           },
           plugins: {
             legend: {
+              position: window.innerWidth < 640 ? "bottom" : "top",
               labels: {
                 color: "#f0f6fc",
-                font: { family: "Plus Jakarta Sans", size: 11 },
-                boxWidth: 14,
+                font: { family: "Plus Jakarta Sans", size: window.innerWidth < 640 ? 9 : 11 },
+                boxWidth: window.innerWidth < 640 ? 8 : 14,
+                padding: window.innerWidth < 640 ? 6 : 10,
               },
             },
           },
