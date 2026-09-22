@@ -40,6 +40,10 @@ from .explainable_ai import (
     detect_energy_deficit_window,
     generate_decision_timeline,
 )
+from .weather_service import (
+    fetch_live_google_weather,
+    run_forecast_with_weather,
+)
 
 __all__ = [
     "BaseLoadForecaster",
@@ -67,4 +71,6 @@ __all__ = [
     "generate_ai_decision_card",
     "detect_energy_deficit_window",
     "generate_decision_timeline",
+    "fetch_live_google_weather",
+    "run_forecast_with_weather",
 ]

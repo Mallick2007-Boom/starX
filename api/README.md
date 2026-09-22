@@ -8,9 +8,15 @@ The BOREAS API is a high-performance, asynchronous FastAPI backend microservice 
 
 - **Dual-Mount Routing**: Every endpoint is mounted at both `/api/<path>` and `/<path>` for backward compatibility and reverse proxy flexibility.
 - **FastAPI Dependency-Clean Serialization**: Query parameters cleanly accept typed query arguments or direct function invocations.
-- **OpenAPI / Swagger Documentation**:
-  - Interactive Swagger UI: [http://localhost:8000/docs](http://localhost:8000/docs)
-  - ReDoc Interface: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+
+### 🌐 Documentation & Interface Directory
+
+| Interface / Portal | URL Link | Format | Description |
+|---|---|---|---|
+| **Mission Control Dashboard** | [http://localhost:8000/](http://localhost:8000/) | HTML5 / Web HUD | Full 7-row real-time station telemetry dashboard |
+| **Interactive Swagger UI** | [http://localhost:8000/docs](http://localhost:8000/docs) | Swagger UI | Live endpoint execution, query parameter testing, & schemas |
+| **ReDoc Interface** | [http://localhost:8000/redoc](http://localhost:8000/redoc) | ReDoc Engine | Clean three-column technical reference manual |
+| **OpenAPI Specification** | [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json) | JSON (OpenAPI 3.1) | Machine-readable API schema and endpoint definitions |
 
 ---
 

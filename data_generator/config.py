@@ -16,6 +16,7 @@ class StationConfig:
     # Station Identity & Location
     station_name: str = "Boreas Polar Research Station"
     latitude: float = -78.5  # High Antarctic latitude (degrees South)
+    longitude: float = 166.66  # Ross Island / McMurdo Sound sector (degrees East)
     elevation_m: float = 1200.0  # Elevation above sea level (meters)
     year: int = 2026
     random_seed: int = 42

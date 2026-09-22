@@ -298,7 +298,10 @@ class PolarStationDesktopApp(tk.Tk):
                 diesel = eng.get("diesel_generation_kw", 50.0)
                 bat = eng.get("battery_power_kw", 0.0)
                 mode_str = stn.get("operating_mode", "NORMAL")
-                reason = dt_data.get("decision", {}).get("reason", "Nominal microgrid dispatch.")
+                dec = dt_data.get("decision", {})
+                act_str = dec.get("action", "")
+                reason_body = dec.get("why") or dec.get("reason") or "Nominal microgrid dispatch."
+                reason = f"[{act_str}] {reason_body}" if act_str else reason_body
                 ts = dt_data.get("timestamp", "2026-07-15")
                 demand = eng.get("total_station_demand_kw", 110.0)
                 bat_mode = eng.get("battery_mode", "IDLE")

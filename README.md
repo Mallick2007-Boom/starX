@@ -9,6 +9,21 @@ An autonomous, physics-informed microgrid resilience and mission control platfor
 
 ---
 
+## 🌐 Quick Access & System Links Directory
+
+| Portal / Interface | URL Link | Protocol / Format | Description | Path / Port |
+|---|---|---|---|---|
+| **Mission Control Web Dashboard** | [http://localhost:8000/](http://localhost:8000/) | Web UI (HTML5 / Chart.js) | Full 7-row interactive polar station HUD with real-time energy flow & automated 60s demo | `http://localhost:8000/` |
+| **Interactive Swagger API Docs** | [http://localhost:8000/docs](http://localhost:8000/docs) | Swagger UI (OpenAPI 3.1) | Interactive testing console to execute and query all 51 dual-mounted REST endpoints | `http://localhost:8000/docs` |
+| **ReDoc Technical Reference** | [http://localhost:8000/redoc](http://localhost:8000/redoc) | ReDoc Engine | Three-panel responsive technical manual, schema definitions, and model payloads | `http://localhost:8000/redoc` |
+| **OpenAPI Specification Schema** | [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json) | OpenAPI 3.1 JSON | Machine-readable API schema definition and route dictionary | `http://localhost:8000/openapi.json` |
+| **Station Health & Heartbeat** | [http://localhost:8000/api/health](http://localhost:8000/api/health) | REST API (JSON) | Station coordinates (-78.5°S, 166.7°E), elevation (1,200m), and active model registry | `http://localhost:8000/api/health` |
+| **Digital Twin Physical State** | [http://localhost:8000/api/digital-twin/state](http://localhost:8000/api/digital-twin/state) | REST API (JSON) | Multi-domain environmental, electrical, and battery snapshot for any hour (0–8759) | `http://localhost:8000/api/digital-twin/state` |
+| **72-Hour Predictive Forecast** | [http://localhost:8000/api/forecast/72h](http://localhost:8000/api/forecast/72h) | REST API (JSON) | Synchronized multi-channel weather, wind icing derating, solar, and deficit windows | `http://localhost:8000/api/forecast/72h` |
+| **Mission Risk Diagnostics** | [http://localhost:8000/api/risk/current](http://localhost:8000/api/risk/current) | REST API (JSON) | Station operational survival tier (`NORMAL`, `WATCH`, `WARNING`, `SURVIVAL`) & autonomy | `http://localhost:8000/api/risk/current` |
+
+---
+
 ## 🏆 Master Judge Presentation & Defense Playbook
 
 *Use this section as your complete speaking script and defense reference during hackathon judging, technical reviews, or project defenses.*
@@ -552,31 +567,30 @@ Launch the FastAPI microservice and web server:
 
 ---
 
-### Step 3: Open the Mission Control Dashboard
-Open your web browser and navigate to:
+### Step 3: Open the Mission Control Dashboard & Documentation
 
-👉 **[http://localhost:8000/](http://localhost:8000/)**
+All live web portals and documentation interfaces are accessible below:
 
-*Tip: Click **"▶ RUN DEMO (60s)"** in the header to launch the automated 10-scene guided presentation tour!*
+| Portal / Interface | Direct URL Link | Format | Purpose |
+|---|---|---|---|
+| **Mission Control Dashboard** | [http://localhost:8000/](http://localhost:8000/) | Web UI (HTML5) | Live 7-row HUD, power dispatch, & automated 10-scene guided tour |
+| **Interactive Swagger UI** | [http://localhost:8000/docs](http://localhost:8000/docs) | Interactive Docs | Live execution and parameter testing for 51 REST routes |
+| **ReDoc Documentation** | [http://localhost:8000/redoc](http://localhost:8000/redoc) | Responsive UI | Clean, three-column API schema and architecture manual |
+| **OpenAPI JSON Schema** | [http://localhost:8000/openapi.json](http://localhost:8000/openapi.json) | JSON Specification | Standard OpenAPI 3.1 contract schema |
+
+*Tip: In the web dashboard, click **"▶ RUN DEMO (60s)"** in the header to launch the automated 10-scene guided presentation tour!*
 
 ---
 
 ### Step 4: Launch the Native Windows Desktop Mission Control App
 To run the standalone Windows desktop operations console:
 
-- **Option A (1-Click Launcher)**: Double-click `Launch_Desktop_App.bat` in the project root folder.
-- **Option B (Terminal)**:
+- **Option A (1-Click Launcher)**: Double-click `Launch_Desktop_App.bat` in the project root folder (auto-starts backend if not running).
+- **Option B (Dedicated Server Launcher)**: Double-click `Start_API_Server.bat` to launch the API and web server in a dedicated window.
+- **Option C (Terminal)**:
   ```powershell
   .venv\Scripts\python.exe desktop_app.py
   ```
-
----
-
-### Step 5: Explore the Interactive OpenAPI Documentation
-Inspect, test, and execute all 51 dual-mounted REST endpoints via Swagger UI:
-
-👉 **[http://localhost:8000/docs](http://localhost:8000/docs)**
-*(Alternative ReDoc interface available at: [http://localhost:8000/redoc](http://localhost:8000/redoc))*
 
 ---
 

@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>STAR-X — Autonomous Energy Commander & Extreme Microgrid Platform</title>
+  <meta name="description" content="Next-generation autonomous energy management, IEA Task 19 blade icing physics, and predictive dispatch platform for extreme Antarctic research facilities.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="starx.css">
+</head>
+<body>
+
+  <!-- Top Header & Live Telemetry Strip -->
+  <header>
+    <div class="brand-badge-container">
+      <div class="brand-icon-box">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>STAR-X <span class="brand-pill">MISSION CONTROL</span></h1>
+        <p>Autonomous Extreme-Environment Microgrid & Atmospheric Defense</p>
+      </div>
+    </div>
+
+    <div class="hud-actions">
+      <div class="hud-chip">
+        <span class="label">COORDS</span>
+        <span class="val">78.5°S, 166.7°E</span>
+      </div>
+      <div class="hud-chip">
+        <span class="label">API LINK</span>
+        <span class="val" id="apiStatusDisplay" style="color: var(--emerald-neon);">● LIVE API</span>
+      </div>
+      <div class="mode-badge survival" id="operatingModeBadge">
+        🚨 SURVIVAL MODE
+      </div>
+      <button class="btn-primary" onclick="openWeatherModal()">
+        ⛅ LIVE WEATHER INGEST
+      </button>
+      <a href="index.html" id="btnBackToHome" class="btn-primary" onclick="navigateToHomePage(event)" style="text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #0051ff, #00e5ff); color: #040810; font-weight: 800; padding: 0.55rem 1.15rem; border-radius: 8px; box-shadow: 0 0 16px rgba(0, 240, 255, 0.45); border: none; cursor: pointer; transition: all 0.2s ease;">
+        🏠 ⬅ BACK TO HOME PAGE
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Application Body -->
+  <main>
+
+    <!-- Top Key Metrics Cards -->
+    <section class="metric-grid">
+      <!-- Card 1: Atmospheric Conditions -->
+      <div class="glass-panel metric-card" style="--accent-color: var(--cyan-neon);">
+        <div class="metric-header">
+          <span class="metric-title">Outdoor Ambient</span>
+          <span class="metric-icon">❄️</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="dispTemp">-52.4</span>
+          <span class="metric-unit">°C</span>
+        </div>
+        <div class="metric-sub" id="dispWeatherCondition">Katabatic Blizzard Warning • Wind: 14.8 m/s</div>
+      </div>
+
+      <!-- Card 2: Microgrid Power Flow -->
+      <div class="glass-panel metric-card" style="--accent-color: var(--emerald-neon);">
+        <div class="metric-header">
+          <span class="metric-title">Renewables vs Demand</span>
+          <span class="metric-icon">⚡</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="dispRenewables">52.1</span>
+          <span class="metric-unit">/ <span id="dispDemand">122.5</span> kW</span>
+        </div>
+        <div class="metric-sub" id="dispDeficit">Net Energy Deficit: 70.4 kW</div>
+      </div>
+
+      <!-- Card 3: BESS Battery Storage -->
+      <div class="glass-panel metric-card" style="--accent-color: var(--blue-accent);">
+        <div class="metric-header">
+          <span class="metric-title">BESS Storage Bank</span>
+          <span class="metric-icon">🔋</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="dispBatterySoc">62.4</span>
+          <span class="metric-unit">% (<span id="dispBatteryKw">-35.0</span> kW)</span>
+        </div>
+        <div class="metric-sub" id="dispBatteryProtection">Cold Protection Active (Floor: 30%)</div>
+      </div>
+
+      <!-- Card 4: Diesel Reserves & Autonomy -->
+      <div class="glass-panel metric-card" style="--accent-color: var(--amber-neon);">
+        <div class="metric-header">
+          <span class="metric-title">Fuel & Autonomy Margin</span>
+          <span class="metric-icon">⛽</span>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="dispFuelReserve">268,400</span>
+          <span class="metric-unit">L</span>
+        </div>
+        <div class="metric-sub" id="dispAutonomy">Burn Rate: 13.6 L/h • Autonomy: 184 Days</div>
+      </div>
+    </section>
+
+    <!-- Deficit Early Warning Banner -->
+    <div class="deficit-alert-banner" id="deficitWarningBanner">
+      <div class="title">
+        <span>⚠️</span>
+        <span id="bannerTitle">DEFICIT WINDOW DETECTED (T+14h TO T+36h)</span>
+      </div>
+      <div class="desc" id="bannerDesc">
+        Atmospheric rime icing derating wind blades by 45% combined with mid-winter polar night darkness. Lookahead MPC has pre-ignited Genset #1 in optimal fuel band.
+      </div>
+    </div>
+
+    <!-- Tactical Polar Station Geospatial & Facility Map -->
+    <section class="glass-panel polar-map-card" id="polarStationMapSection">
+      <div class="section-head" style="margin-bottom: 0.75rem;">
+        <div>
+          <h2>
+            <span>🗺️</span> Tactical Polar Station Geospatial & Microgrid Base Map
+          </h2>
+          <span class="meta">COORDINATES: 78.5000° S, 166.6600° E • ROSS ICE SHELF BASE • ELEVATION 1,200M</span>
+        </div>
+        <div class="map-quick-telemetry">
+          <span class="map-badge" id="mapWeatherBadge">❄️ -52.4°C • KATABATIC BLIZZARD</span>
+          <span class="map-badge active-sector" id="mapSectorActiveBadge">SECTOR INSPECTOR ACTIVE</span>
+        </div>
+      </div>
+
+      <div class="polar-map-grid">
+        <!-- SVG Vector Tactical Map Display -->
+        <div class="polar-map-container">
+          <svg viewBox="0 0 900 480" class="polar-map-svg" id="stationMapSvg">
+            <defs>
+              <!-- Glowing Filters -->
+              <filter id="mapGlowCyan" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+              <filter id="mapGlowGreen" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+              <radialGradient id="radarSweepGrad" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="rgba(0, 240, 255, 0.25)"/>
+                <stop offset="70%" stop-color="rgba(0, 240, 255, 0.04)"/>
+                <stop offset="100%" stop-color="transparent"/>
+              </radialGradient>
+              <pattern id="polarGridPattern" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(0, 240, 255, 0.05)" stroke-width="1"/>
+              </pattern>
+            </defs>
+
+            <!-- Background Grid & Polar Elevation Rings -->
+            <rect width="900" height="480" fill="#030816"/>
+            <rect width="900" height="480" fill="url(#polarGridPattern)"/>
+
+            <!-- Concentric Radar Range Rings (0.5km, 1.0km, 1.5km, 2.0km) -->
+            <circle cx="450" cy="240" r="80" fill="none" stroke="rgba(0, 240, 255, 0.12)" stroke-dasharray="4 4"/>
+            <circle cx="450" cy="240" r="160" fill="none" stroke="rgba(0, 240, 255, 0.1)" stroke-dasharray="6 6"/>
+            <circle cx="450" cy="240" r="230" fill="none" stroke="rgba(0, 240, 255, 0.08)"/>
+            <text x="450" y="75" fill="rgba(0, 240, 255, 0.4)" font-size="9" font-family="'JetBrains Mono'" text-anchor="middle">2.0 KM PERIMETER</text>
+            <text x="450" y="155" fill="rgba(0, 240, 255, 0.4)" font-size="9" font-family="'JetBrains Mono'" text-anchor="middle">1.0 KM BUFFER</text>
+
+            <!-- Crosshair Axes -->
+            <line x1="450" y1="10" x2="450" y2="470" stroke="rgba(0, 240, 255, 0.08)" stroke-width="1"/>
+            <line x1="20" y1="240" x2="880" y2="240" stroke="rgba(0, 240, 255, 0.08)" stroke-width="1"/>
+
+            <!-- Radar Sweep Beam -->
+            <g class="radar-scanner">
+              <line x1="450" y1="240" x2="680" y2="10" stroke="#00f0ff" stroke-width="1.5" opacity="0.6"/>
+              <polygon points="450,240 680,10 740,40" fill="url(#radarSweepGrad)" opacity="0.4"/>
+            </g>
+
+            <!-- Microgrid Power Conduits (Sub-surface heated cables) -->
+            <!-- Hub (450, 240) to Wind Farm (190, 110) -->
+            <path d="M 450 240 L 290 180 L 190 110" fill="none" stroke="#10b981" stroke-width="2.5" stroke-dasharray="5 5" class="cable-pulse" opacity="0.75"/>
+            <!-- Hub (450, 240) to Solar Array (700, 110) -->
+            <path d="M 450 240 L 580 170 L 700 110" fill="none" stroke="#00f0ff" stroke-width="2" stroke-dasharray="4 4" class="cable-pulse" opacity="0.7"/>
+            <!-- Hub (450, 240) to Battery Bunker (260, 360) -->
+            <path d="M 450 240 L 350 310 L 260 360" fill="none" stroke="#3b82f6" stroke-width="3" opacity="0.8"/>
+            <!-- Hub (450, 240) to Diesel Depot (140, 270) -->
+            <path d="M 450 240 L 280 260 L 140 270" fill="none" stroke="#f59e0b" stroke-width="3" opacity="0.8"/>
+            <!-- Hub (450, 240) to Deep Ice Drill (740, 350) -->
+            <path d="M 450 240 L 610 300 L 740 350" fill="none" stroke="#a855f7" stroke-width="2" stroke-dasharray="6 4" opacity="0.75"/>
+
+            <!-- Sector Node 1: Wind Turbine Array (North-West) -->
+            <g class="map-node clickable-sector selected-sector" id="mapNode_wind" onclick="selectMapSector('wind')" transform="translate(190, 110)">
+              <circle r="26" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" stroke-width="2" filter="url(#mapGlowGreen)"/>
+              <circle r="6" fill="#10b981"/>
+              <text y="-32" fill="#10b981" font-size="11" font-family="'Outfit'" font-weight="700" text-anchor="middle">SECTOR ALPHA: WIND</text>
+              <text y="42" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono'" text-anchor="middle" id="mapWindPower">52.1 kW • 3x Turbines</text>
+            </g>
+
+            <!-- Sector Node 2: Bifacial Solar Farm (North-East) -->
+            <g class="map-node clickable-sector" id="mapNode_solar" onclick="selectMapSector('solar')" transform="translate(700, 110)">
+              <circle r="24" fill="rgba(0, 240, 255, 0.12)" stroke="#00f0ff" stroke-width="2" filter="url(#mapGlowCyan)"/>
+              <circle r="5" fill="#00f0ff"/>
+              <text y="-30" fill="#00f0ff" font-size="11" font-family="'Outfit'" font-weight="700" text-anchor="middle">SECTOR BETA: SOLAR</text>
+              <text y="40" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono'" text-anchor="middle" id="mapSolarPower">0.0 kW • Polar Night</text>
+            </g>
+
+            <!-- Sector Node 3: BESS Storage Bunker (South-West) -->
+            <g class="map-node clickable-sector" id="mapNode_battery" onclick="selectMapSector('battery')" transform="translate(260, 360)">
+              <circle r="24" fill="rgba(59, 130, 246, 0.15)" stroke="#3b82f6" stroke-width="2"/>
+              <circle r="5" fill="#3b82f6"/>
+              <text y="-30" fill="#3b82f6" font-size="11" font-family="'Outfit'" font-weight="700" text-anchor="middle">SECTOR GAMMA: BESS</text>
+              <text y="40" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono'" text-anchor="middle" id="mapBatteryPower">62.4% SoC • 300kWh</text>
+            </g>
+
+            <!-- Sector Node 4: Diesel Genset Depot (West) -->
+            <g class="map-node clickable-sector" id="mapNode_diesel" onclick="selectMapSector('diesel')" transform="translate(140, 270)">
+              <circle r="24" fill="rgba(245, 158, 11, 0.15)" stroke="#f59e0b" stroke-width="2"/>
+              <circle r="5" fill="#f59e0b"/>
+              <text y="-30" fill="#f59e0b" font-size="11" font-family="'Outfit'" font-weight="700" text-anchor="middle">SECTOR DELTA: GENSET</text>
+              <text y="40" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono'" text-anchor="middle" id="mapDieselPower">Gen #1: 35.4 kW</text>
+            </g>
+
+            <!-- Sector Node 5: Central Life Support & Habitat Dome (Center) -->
+            <g class="map-node clickable-sector" id="mapNode_habitat" onclick="selectMapSector('habitat')" transform="translate(450, 240)">
+              <circle r="34" fill="rgba(239, 68, 68, 0.18)" stroke="#ef4444" stroke-width="2.5"/>
+              <circle r="8" fill="#ef4444"/>
+              <text y="-40" fill="#f87171" font-size="12" font-family="'Outfit'" font-weight="800" text-anchor="middle">HABITAT & LIFE SUPPORT</text>
+              <text y="50" fill="#ffffff" font-size="10" font-family="'JetBrains Mono'" font-weight="bold" text-anchor="middle" id="mapHabitatPower">HVAC 84.5 kW • 18 Winter Crew</text>
+            </g>
+
+            <!-- Sector Node 6: Deep Ice Core Rig & Science Labs (South-East) -->
+            <g class="map-node clickable-sector" id="mapNode_drill" onclick="selectMapSector('drill')" transform="translate(740, 350)">
+              <circle r="24" fill="rgba(168, 85, 247, 0.15)" stroke="#a855f7" stroke-width="2"/>
+              <circle r="5" fill="#a855f7"/>
+              <text y="-30" fill="#c084fc" font-size="11" font-family="'Outfit'" font-weight="700" text-anchor="middle">SECTOR ZETA: ICE DRILL</text>
+              <text y="40" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono'" text-anchor="middle" id="mapDrillPower">45.0 kW • Depth: -2,840m</text>
+            </g>
+
+            <!-- Compass Rose & Scale Overlay -->
+            <g transform="translate(830, 60)">
+              <circle r="22" fill="rgba(2, 6, 23, 0.7)" stroke="rgba(0, 240, 255, 0.3)"/>
+              <text y="-8" fill="#00f0ff" font-size="11" font-weight="bold" font-family="'JetBrains Mono'" text-anchor="middle">N</text>
+              <line x1="0" y1="-18" x2="0" y2="18" stroke="rgba(0, 240, 255, 0.5)"/>
+              <line x1="-18" y1="0" x2="18" y2="0" stroke="rgba(0, 240, 255, 0.5)"/>
+              <text y="15" fill="#94a3b8" font-size="7" font-family="'JetBrains Mono'" text-anchor="middle">GRID</text>
+            </g>
+          </svg>
+        </div>
+
+        <!-- Interactive Sector Inspector Card -->
+        <div class="map-inspector-panel glass-panel">
+          <div class="inspector-header">
+            <span class="sector-code" id="inspSectorCode">SECTOR ALPHA</span>
+            <span class="sector-badge" id="inspSectorBadge" style="background: rgba(16, 185, 129, 0.2); color: var(--emerald-neon);">ONLINE • OPTIMAL</span>
+          </div>
+          <h3 id="inspSectorTitle" style="font-size: 1.15rem; color: #ffffff; margin: 0.35rem 0;">Wind Turbine Farm (3x 33.3 kW)</h3>
+          <p id="inspSectorDesc" style="font-size: 0.78rem; color: var(--text-secondary); line-height: 1.45; margin-bottom: 0.85rem;">
+            IEA Task 19 electro-thermal blade de-icing heaters equipped. Operating at katabatic wind velocity 14.8 m/s with 28% aerodynamic rime icing derating.
+          </p>
+
+          <div class="inspector-stats-grid">
+            <div class="stat-cell">
+              <span class="lbl">POWER / FLOW</span>
+              <span class="val" id="inspStatPower" style="color: var(--emerald-neon);">52.1 kW</span>
+            </div>
+            <div class="stat-cell">
+              <span class="lbl">THERMAL TEMP</span>
+              <span class="val" id="inspStatTemp">-52.4 °C</span>
+            </div>
+            <div class="stat-cell">
+              <span class="lbl">ASSET HEALTH</span>
+              <span class="val" id="inspStatHealth" style="color: var(--cyan-neon);">96% NOMINAL</span>
+            </div>
+            <div class="stat-cell">
+              <span class="lbl">DISPATCH PRIORITY</span>
+              <span class="val" id="inspStatPriority">PRIMARY RENEWABLE</span>
+            </div>
+          </div>
+
+          <div class="inspector-actions" style="margin-top: 1rem; display: flex; gap: 0.6rem;">
+            <button class="btn-primary" style="flex: 1; padding: 0.5rem 0.75rem; font-size: 0.78rem;" onclick="pulseSectorAction()">
+              ⚡ DE-ICE / ACTIVATE
+            </button>
+            <button class="btn-outline" style="flex: 1; padding: 0.5rem 0.75rem; font-size: 0.78rem;" onclick="cycleNextSector()">
+              NEXT SECTOR ❯
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Workbench (2 Columns) -->
+    <div class="workbench-layout">
+
+      <!-- Left Column: Synoptic Power Bus & 72h Lookahead Chart -->
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- Synoptic Power Bus Schematic -->
+        <div class="glass-panel synoptic-bus-card">
+          <div class="section-head">
+            <h2>
+              <span>💠</span> Interactive Synoptic Microgrid Bus
+            </h2>
+            <span class="meta">ACTIVE VOLTAGE: 400V 3Ø AC • 50 HZ</span>
+          </div>
+
+          <div class="bus-svg-container">
+            <svg viewBox="0 0 820 250">
+              <defs>
+                <!-- Glow Filters -->
+                <filter id="glowCyan" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+                <filter id="glowGreen" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+                <filter id="glowAmber" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur"/>
+                  <feMerge>
+                    <feMergeNode in="blur"/>
+                    <feMergeNode in="SourceGraphic"/>
+                  </feMerge>
+                </filter>
+              </defs>
+
+              <!-- Central Main AC Distribution Bus Bar -->
+              <line x1="80" y1="125" x2="740" y2="125" stroke="#334155" stroke-width="8" stroke-linecap="round"/>
+              <line x1="80" y1="125" x2="740" y2="125" stroke="#00f0ff" stroke-width="2" opacity="0.6"/>
+
+              <!-- Flow Branch 1: Solar Array (Top Left) -->
+              <path class="power-flow-line" d="M 140 45 L 140 125" stroke="#00f0ff" stroke-width="3" opacity="0.8"/>
+              <rect x="90" y="10" width="100" height="40" rx="8" fill="#09132b" stroke="#00f0ff" stroke-width="1.5"/>
+              <text x="140" y="27" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono'" text-anchor="middle">SOLAR PV</text>
+              <text x="140" y="42" fill="#00f0ff" font-size="12" font-family="'JetBrains Mono'" font-weight="bold" text-anchor="middle" id="busSolarVal">0.0 kW</text>
+
+              <!-- Flow Branch 2: Wind Turbines (Top Mid-Left) -->
+              <path class="power-flow-line" d="M 280 45 L 280 125" stroke="#10b981" stroke-width="3.5" opacity="0.9"/>
+              <rect x="230" y="10" width="100" height="40" rx="8" fill="#09132b" stroke="#10b981" stroke-width="1.5"/>
+              <text x="280" y="27" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono'" text-anchor="middle">WIND TURBINES</text>
+              <text x="280" y="42" fill="#10b981" font-size="12" font-family="'JetBrains Mono'" font-weight="bold" text-anchor="middle" id="busWindVal">52.1 kW</text>
+
+              <!-- Flow Branch 3: BESS Battery Storage (Bottom Mid-Left) -->
+              <path class="power-flow-line" d="M 380 205 L 380 125" stroke="#3b82f6" stroke-width="3.5" opacity="0.9"/>
+              <rect x="330" y="195" width="100" height="42" rx="8" fill="#09132b" stroke="#3b82f6" stroke-width="1.5"/>
+              <text x="380" y="212" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono'" text-anchor="middle">BESS BATTERY</text>
+              <text x="380" y="228" fill="#3b82f6" font-size="12" font-family="'JetBrains Mono'" font-weight="bold" text-anchor="middle" id="busBatteryVal">-35.0 kW</text>
+
+              <!-- Flow Branch 4: Diesel Gensets (Top Mid-Right) -->
+              <path class="power-flow-line" d="M 520 45 L 520 125" stroke="#f59e0b" stroke-width="3" opacity="0.8"/>
+              <rect x="470" y="10" width="100" height="40" rx="8" fill="#09132b" stroke="#f59e0b" stroke-width="1.5"/>
+              <text x="520" y="27" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono'" text-anchor="middle">DIESEL GENSETS</text>
+              <text x="520" y="42" fill="#f59e0b" font-size="12" font-family="'JetBrains Mono'" font-weight="bold" text-anchor="middle" id="busDieselVal">35.4 kW</text>
+
+              <!-- Flow Branch 5: Life Support Heating (Bottom Mid-Right) -->
+              <path class="power-flow-line" d="M 600 125 L 600 205" stroke="#ef4444" stroke-width="4" opacity="0.9"/>
+              <rect x="545" y="195" width="110" height="42" rx="8" fill="#09132b" stroke="#ef4444" stroke-width="1.5"/>
+              <text x="600" y="212" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono'" text-anchor="middle">LIFE SUPPORT</text>
+              <text x="600" y="228" fill="#ef4444" font-size="12" font-family="'JetBrains Mono'" font-weight="bold" text-anchor="middle" id="busHeatingVal">84.5 kW</text>
+
+              <!-- Flow Branch 6: Science Hub & Labs (Bottom Right) -->
+              <path class="power-flow-line" d="M 700 125 L 700 205" stroke="#a855f7" stroke-width="3" opacity="0.85"/>
+              <rect x="650" y="195" width="100" height="42" rx="8" fill="#09132b" stroke="#a855f7" stroke-width="1.5"/>
+              <text x="700" y="212" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono'" text-anchor="middle">SCIENCE LOADS</text>
+              <text x="700" y="228" fill="#a855f7" font-size="12" font-family="'JetBrains Mono'" font-weight="bold" text-anchor="middle" id="busScienceVal">38.0 kW</text>
+            </svg>
+          </div>
+        </div>
+
+        <!-- 72-Hour Predictive Horizon Chart -->
+        <div class="glass-panel forecast-card">
+          <div class="section-head">
+            <h2>
+              <span>📈</span> 72-Hour Multi-Horizon Predictive Dispatch
+            </h2>
+            <span class="meta" id="chartSourceLabel">SOURCE: LOCAL PHYSICS ENGINE</span>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="starxForecastChart"></canvas>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Interactive Sandbox & Load Shedder -->
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+
+        <!-- Interactive Physics & Dispatch Sandbox -->
+        <div class="glass-panel sandbox-panel">
+          <div class="section-head" style="margin-bottom: 0.5rem;">
+            <h2>
+              <span>🎛️</span> Physics Sandbox Controls
+            </h2>
+            <button class="btn-outline" style="padding: 0.25rem 0.65rem; font-size: 0.72rem;" onclick="resetSandbox()">
+              RESET
+            </button>
+          </div>
+          <p style="font-size: 0.76rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+            Dynamically inject extreme weather fronts and adjust battery levels to test real-time AI dispatch response.
+          </p>
+
+          <!-- Slider 1: Outdoor Temperature -->
+          <div class="control-group">
+            <div class="control-label-row">
+              <span class="name">Outdoor Temperature</span>
+              <span class="val" id="valTempSlider">-52.4 °C</span>
+            </div>
+            <input type="range" id="sliderTemp" min="-65" max="0" step="0.5" value="-52.4" oninput="onTempSliderChange(this.value)">
+          </div>
+
+          <!-- Slider 2: Wind Speed -->
+          <div class="control-group">
+            <div class="control-label-row">
+              <span class="name">Katabatic Wind Speed</span>
+              <span class="val" id="valWindSlider">14.8 m/s</span>
+            </div>
+            <input type="range" id="sliderWind" min="0" max="30" step="0.5" value="14.8" oninput="onWindSliderChange(this.value)">
+          </div>
+
+          <!-- Slider 3: Relative Humidity (Icing Risk) -->
+          <div class="control-group">
+            <div class="control-label-row">
+              <span class="name">Relative Humidity (Icing Risk)</span>
+              <span class="val" id="valHumiditySlider">76 % (Factor: 0.72)</span>
+            </div>
+            <input type="range" id="sliderHumidity" min="20" max="100" step="1" value="76" oninput="onHumiditySliderChange(this.value)">
+          </div>
+
+          <!-- Slider 4: Battery SoC -->
+          <div class="control-group">
+            <div class="control-label-row">
+              <span class="name">BESS Battery State of Charge (SoC)</span>
+              <span class="val" id="valSocSlider">62 %</span>
+            </div>
+            <input type="range" id="sliderSoc" min="10" max="100" step="1" value="62" oninput="onSocSliderChange(this.value)">
+          </div>
+        </div>
+
+        <!-- Load Shedding Switchboard -->
+        <div class="glass-panel switchboard-card">
+          <div class="section-head" style="margin-bottom: 0.75rem;">
+            <h2>
+              <span>🔌</span> Flexible Load Shedder
+            </h2>
+            <span class="meta" id="shedderCurtailedMeta">CURTAILED: 0 kW</span>
+          </div>
+
+          <div class="switch-list">
+            <!-- Switch 1: Deep Ice Drill -->
+            <div class="switch-row">
+              <div class="switch-info">
+                <span class="switch-name">Deep Ice Core Rig</span>
+                <span class="switch-meta">Priority 4 • 45 kW Consumption</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle_iceDrill" checked onchange="window.starX.toggleLoad('iceDrill', this.checked)">
+                <span class="slider-toggle"></span>
+              </label>
+            </div>
+
+            <!-- Switch 2: Atmospheric LIDAR -->
+            <div class="switch-row">
+              <div class="switch-info">
+                <span class="switch-name">Atmospheric Aerosol LIDAR</span>
+                <span class="switch-meta">Priority 3 • 15 kW Consumption</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle_lidar" checked onchange="window.starX.toggleLoad('lidar', this.checked)">
+                <span class="slider-toggle"></span>
+              </label>
+            </div>
+
+            <!-- Switch 3: E-Skidoo Mobility Hub -->
+            <div class="switch-row">
+              <div class="switch-info">
+                <span class="switch-name">E-Skidoo Fast-Charger</span>
+                <span class="switch-meta">Priority 2 • 22 kW Consumption</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle_skidoo" checked onchange="window.starX.toggleLoad('skidoo', this.checked)">
+                <span class="slider-toggle"></span>
+              </label>
+            </div>
+
+            <!-- Switch 4: Laundry & Sanitation -->
+            <div class="switch-row">
+              <div class="switch-info">
+                <span class="switch-name">Hydro-Sanitation & Laundry</span>
+                <span class="switch-meta">Priority 2 • 8 kW Consumption</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="toggle_laundry" checked onchange="window.starX.toggleLoad('laundry', this.checked)">
+                <span class="slider-toggle"></span>
+              </label>
+            </div>
+
+            <!-- Non-sheddable Habitat Life Support -->
+            <div class="switch-row" style="opacity: 0.85; border-color: rgba(239, 68, 68, 0.35);">
+              <div class="switch-info">
+                <span class="switch-name" style="color: var(--red-alert);">🔒 Life Support HVAC Thermal Loop</span>
+                <span class="switch-meta">NON-SHEDDABLE • Mandatory Human Habitability</span>
+              </div>
+              <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--red-alert); font-weight: bold;">LOCKED</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Copilot & Decision Rationale -->
+        <div class="glass-panel ai-console-card">
+          <div class="section-head" style="margin-bottom: 0.5rem;">
+            <h2>
+              <span>🧠</span> AI Copilot Dispatch Rationale
+            </h2>
+            <span class="meta" id="aiRiskScoreDisplay">RISK: 78 / 100</span>
+          </div>
+
+          <div class="ai-reasoning-bubble">
+            <div class="ai-bubble-title" id="aiActionTitle">
+              🚨 Polar Emergency Fuel & Thermal Conservation
+            </div>
+            <div class="ai-bubble-text" id="aiRationaleText">
+              Sub-zero polar chill (-52.4°C) requires 84.5 kW critical heating. Genset #1 running in optimal fuel band; battery providing peak-shaving while honoring 30% cold protection floor.
+            </div>
+            <div class="ai-recom-box" id="aiRecommendationBox">
+              Recommendation: Defer Deep Ice Drill (45 kW) if wind drops below 9 m/s to save 19.1 L/hr fuel.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Google Weather Ingestion Modal -->
+  <div class="modal-overlay" id="weatherModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>⛅ Google Weather API Live Ingest</h3>
+        <button class="modal-close-btn" onclick="closeWeatherModal()">✕</button>
+      </div>
+      <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+        Query the official Google Weather endpoint <code>forecast/hours:lookup</code> for station coordinates to run live machine-learning inference.
+      </p>
+
+      <div style="display: flex; flex-direction: column; gap: 1rem;">
+        <div class="control-group">
+          <span class="control-label-row">
+            <span class="name">Station Coordinates</span>
+          </span>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="text" id="weatherLat" value="-78.5" style="width: 50%; padding: 0.5rem; background: #030712; border: 1px solid var(--border-glass); color: #ffffff; border-radius: 6px; font-family: var(--font-mono);" placeholder="Latitude">
+            <input type="text" id="weatherLon" value="166.66" style="width: 50%; padding: 0.5rem; background: #030712; border: 1px solid var(--border-glass); color: #ffffff; border-radius: 6px; font-family: var(--font-mono);" placeholder="Longitude">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <span class="control-label-row">
+            <span class="name">Google Cloud Weather API Key (Optional)</span>
+          </span>
+          <input type="password" id="weatherApiKey" style="width: 100%; padding: 0.5rem; background: #030712; border: 1px solid var(--border-glass); color: #ffffff; border-radius: 6px; font-family: var(--font-mono);" placeholder="AIzaSy... (Leave blank for calibrated fallback)">
+        </div>
+
+        <div id="weatherModalStatus" style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--cyan-neon); min-height: 20px;"></div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+          <button class="btn-outline" onclick="closeWeatherModal()">Cancel</button>
+          <button class="btn-primary" onclick="executeWeatherFetch()">Query Google Weather</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="starx_data_engine.js"></script>
+  <script>
+    let forecastChart = null;
+
+    // Initialization
+    window.addEventListener("DOMContentLoaded", () => {
+      initChart();
+      // Initialize synthetic forecast series and dispatch
+      window.starX.generateSynthetic72hForecast();
+      window.starX.solveMicrogridDispatch();
+
+      // Subscribe to engine state updates
+      window.starX.subscribe((state) => {
+        updateUI(state);
+      });
+    });
+
+    // Chart.js Setup
+    function initChart() {
+      const ctx = document.getElementById("starxForecastChart").getContext("2d");
+      forecastChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: "Total Demand (kW)",
+              data: [],
+              borderColor: "#ffffff",
+              borderWidth: 2.2,
+              tension: 0.25,
+              pointRadius: 0,
+            },
+            {
+              label: "Renewables (kW)",
+              data: [],
+              borderColor: "#10b981",
+              backgroundColor: "rgba(16, 185, 129, 0.12)",
+              fill: true,
+              borderWidth: 2,
+              tension: 0.25,
+              pointRadius: 0,
+            },
+            {
+              label: "Scheduled Diesel (kW)",
+              data: [],
+              borderColor: "#f59e0b",
+              borderWidth: 2,
+              borderDash: [5, 4],
+              tension: 0.2,
+              pointRadius: 0,
+            },
+            {
+              label: "Battery Flow (kW)",
+              data: [],
+              borderColor: "#3b82f6",
+              borderWidth: 1.8,
+              tension: 0.2,
+              pointRadius: 0,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: "index", intersect: false },
+          scales: {
+            x: {
+              grid: { color: "rgba(255, 255, 255, 0.05)" },
+              ticks: { color: "#94a3b8", font: { family: "JetBrains Mono", size: 10 } },
+            },
+            y: {
+              grid: { color: "rgba(255, 255, 255, 0.05)" },
+              ticks: { color: "#94a3b8", font: { family: "JetBrains Mono", size: 10 } },
+              title: { display: true, text: "Power (kW)", color: "#94a3b8", font: { size: 11 } },
+            },
+          },
+          plugins: {
+            legend: {
+              position: "top",
+              labels: {
+                color: "#f8fafc",
+                font: { family: "Plus Jakarta Sans", size: 11 },
+                boxWidth: 12,
+                padding: 12,
+              },
+            },
+          },
+        },
+      });
+    }
+
+    // Update UI from engine state
+    function updateUI(state) {
+      const p = state.power;
+      const env = state.env;
+      const ai = state.ai;
+
+      // Metric Cards
+      document.getElementById("dispTemp").innerText = env.outdoorTempC.toFixed(1);
+      document.getElementById("dispWeatherCondition").innerText = `${env.weatherCondition} • Wind: ${env.windSpeedMps} m/s (Icing: ${(env.icingFactor * 100).toFixed(0)}%)`;
+      document.getElementById("dispRenewables").innerText = p.totalRenewableKw.toFixed(1);
+      document.getElementById("dispDemand").innerText = p.totalDemandKw.toFixed(1);
+      document.getElementById("dispDeficit").innerText = `Net Energy Deficit: ${p.netDeficitKw.toFixed(1)} kW`;
+      document.getElementById("dispBatterySoc").innerText = p.batterySocPct.toFixed(1);
+      document.getElementById("dispBatteryKw").innerText = (p.batteryPowerKw > 0 ? "+" : "") + p.batteryPowerKw.toFixed(1);
+      document.getElementById("dispBatteryProtection").innerText = p.batteryColdGuardActive ? "Cold Protection Active (Floor: 30%)" : "Normal Mode (Floor: 20%)";
+      document.getElementById("dispFuelReserve").innerText = p.fuelRemainingLiters.toLocaleString();
+      document.getElementById("dispAutonomy").innerText = `Burn Rate: ${p.fuelFlowLph.toFixed(1)} L/h • Autonomy: ${p.autonomyDaysRemaining} Days`;
+
+      // Operating Mode Badge
+      const modeEl = document.getElementById("operatingModeBadge");
+      modeEl.className = `mode-badge ${ai.operatingMode.toLowerCase()}`;
+      modeEl.innerText = ai.operatingMode === "SURVIVAL" ? "🚨 SURVIVAL MODE" : (ai.operatingMode === "WARNING" ? "⚠️ WARNING" : (ai.operatingMode === "WATCH" ? "🌬️ STORM WATCH" : "● NORMAL OPERATION"));
+
+      // Deficit Banner
+      const banner = document.getElementById("deficitWarningBanner");
+      if (p.netDeficitKw > 20) {
+        banner.style.display = "flex";
+      } else {
+        banner.style.display = "none";
+      }
+
+      // Synoptic SVG Values
+      document.getElementById("busSolarVal").innerText = `${p.solarKw.toFixed(1)} kW`;
+      document.getElementById("busWindVal").innerText = `${p.windEffectiveKw.toFixed(1)} kW`;
+      document.getElementById("busBatteryVal").innerText = `${(p.batteryPowerKw > 0 ? "+" : "")}${p.batteryPowerKw.toFixed(1)} kW`;
+      document.getElementById("busDieselVal").innerText = `${p.totalDieselKw.toFixed(1)} kW`;
+      document.getElementById("busHeatingVal").innerText = `${p.criticalDemandKw.toFixed(1)} kW`;
+      document.getElementById("busScienceVal").innerText = `${p.flexibleDemandKw.toFixed(1)} kW`;
+
+      // Load Shedder Meta
+      document.getElementById("shedderCurtailedMeta").innerText = `CURTAILED: ${p.curtailedFlexibleKw.toFixed(0)} kW`;
+
+      // AI Reasoning
+      document.getElementById("aiActionTitle").innerText = ai.actionTitle;
+      document.getElementById("aiRationaleText").innerText = ai.rationale;
+      document.getElementById("aiRecommendationBox").innerText = ai.recommendation;
+      document.getElementById("aiRiskScoreDisplay").innerText = `RISK SCORE: ${ai.riskScore} / 100`;
+
+      // Update Chart Series
+      if (forecastChart && state.forecast72h && state.forecast72h.length > 0) {
+        forecastChart.data.labels = state.forecast72h.map((d) => d.timeLabel);
+        forecastChart.data.datasets[0].data = state.forecast72h.map((d) => d.demandKw);
+        forecastChart.data.datasets[1].data = state.forecast72h.map((d) => d.renewableKw);
+        forecastChart.data.datasets[2].data = state.forecast72h.map((d) => d.dieselKw);
+        forecastChart.data.datasets[3].data = state.forecast72h.map((d) => d.batteryKw);
+        forecastChart.update();
+      }
+
+      // Tactical Polar Base Map Live Updates
+      const mapWindPower = document.getElementById("mapWindPower");
+      if (mapWindPower) mapWindPower.textContent = `${p.windEffectiveKw.toFixed(1)} kW • 3x Turbines`;
+      const mapSolarPower = document.getElementById("mapSolarPower");
+      if (mapSolarPower) mapSolarPower.textContent = `${p.solarKw.toFixed(1)} kW • ${p.solarKw > 0 ? 'Albedo PV' : 'Polar Night'}`;
+      const mapBatteryPower = document.getElementById("mapBatteryPower");
+      if (mapBatteryPower) mapBatteryPower.textContent = `${p.batterySocPct.toFixed(1)}% SoC • ${(p.batteryPowerKw > 0 ? "+" : "")}${p.batteryPowerKw.toFixed(1)} kW`;
+      const mapDieselPower = document.getElementById("mapDieselPower");
+      if (mapDieselPower) mapDieselPower.textContent = `Gen #1: ${p.totalDieselKw.toFixed(1)} kW`;
+      const mapHabitatPower = document.getElementById("mapHabitatPower");
+      if (mapHabitatPower) mapHabitatPower.textContent = `HVAC ${p.criticalDemandKw.toFixed(1)} kW • Life Support`;
+      const mapDrillPower = document.getElementById("mapDrillPower");
+      if (mapDrillPower) mapDrillPower.textContent = `${p.flexibleDemandKw.toFixed(1)} kW • Science Hub`;
+      const mapWeatherBadge = document.getElementById("mapWeatherBadge");
+      if (mapWeatherBadge) mapWeatherBadge.textContent = `❄️ ${env.outdoorTempC.toFixed(1)}°C • ${env.weatherCondition.toUpperCase()}`;
+
+      // Refresh currently selected sector inspector
+      if (typeof refreshActiveSectorInspector === 'function') {
+        refreshActiveSectorInspector(state);
+      }
+
+      document.getElementById("chartSourceLabel").innerText = `DATA SOURCE: ${state.dataSource.replace(/_/g, " ")}`;
+    }
+
+    // Navigation to Home Page
+    function navigateToHomePage(e) {
+      if (e) e.preventDefault();
+      if (window.location.protocol === 'file:') {
+        const p = window.location.pathname;
+        if (p.includes('/dashboard/') || p.includes('\\dashboard\\')) {
+          window.location.href = '../index.html';
+        } else {
+          window.location.href = 'index.html';
+        }
+      } else {
+        window.location.href = '/';
+      }
+    }
+
+    // Tactical Polar Map Sector Data & Interactivity
+    const SECTOR_METADATA = {
+      wind: {
+        code: "SECTOR ALPHA",
+        title: "Wind Turbine Array (3x 33.3 kW)",
+        desc: "Equipped with IEA Task 19 electro-thermal blade de-icing heaters. Dynamic power curve adjusted for katabatic wind bursts and extreme air density changes at polar sub-zero temperatures.",
+        badge: "ONLINE • OPTIMAL",
+        badgeStyle: "background: rgba(16, 185, 129, 0.2); color: var(--emerald-neon);",
+        tempOffset: 0.0,
+        health: "96% NOMINAL",
+        priority: "PRIORITY 1 RENEWABLE",
+        nodeId: "mapNode_wind",
+        getPower: (p) => `${p.windEffectiveKw.toFixed(1)} kW`
+      },
+      solar: {
+        code: "SECTOR BETA",
+        title: "Bifacial Solar PV Farm (60 kW)",
+        desc: "Ground-mount bifacial photovoltaic array elevated 3.5m above snow drift line. Generates up to 25% surplus from Ross Ice Shelf surface albedo reflection during daylight intervals.",
+        badge: "ONLINE • STANDBY",
+        badgeStyle: "background: rgba(0, 240, 255, 0.15); color: var(--cyan-neon);",
+        tempOffset: 1.5,
+        health: "98% NOMINAL",
+        priority: "PRIORITY 2 RENEWABLE",
+        nodeId: "mapNode_solar",
+        getPower: (p) => `${p.solarKw.toFixed(1)} kW`
+      },
+      battery: {
+        code: "SECTOR GAMMA",
+        title: "BESS Battery Bunker (300 kWh)",
+        desc: "High-density Lithium Iron Phosphate bank housed in heavily insulated sub-surface shelter with active thermal HVAC jackets maintaining +15°C internal cell floor.",
+        badge: "BUFFER ACTIVE",
+        badgeStyle: "background: rgba(59, 130, 246, 0.2); color: var(--blue-accent);",
+        tempOffset: 67.4,
+        health: "93% HEALTHY",
+        priority: "ESSENTIAL BUFFER",
+        nodeId: "mapNode_battery",
+        getPower: (p) => `${(p.batteryPowerKw > 0 ? "+" : "")}${p.batteryPowerKw.toFixed(1)} kW (${p.batterySocPct.toFixed(1)}% SoC)`
+      },
+      diesel: {
+        code: "SECTOR DELTA",
+        title: "Dual Diesel Genset Depot (150 kW)",
+        desc: "Primary Gen #1 (75 kW) and Backup Gen #2 (75 kW) running Antarctic-grade AN-8 fuel. Features automated block warmers and minimum fuel burn optimization.",
+        badge: "DISPATCH OPTIMAL",
+        badgeStyle: "background: rgba(245, 158, 11, 0.2); color: var(--amber-neon);",
+        tempOffset: 125.0,
+        health: "95% READY",
+        priority: "DISPATCHABLE RESERVE",
+        nodeId: "mapNode_diesel",
+        getPower: (p) => `${p.totalDieselKw.toFixed(1)} kW (${p.fuelFlowLph.toFixed(1)} L/h)`
+      },
+      habitat: {
+        code: "SECTOR EPSILON",
+        title: "Habitat & Life Support Complex",
+        desc: "Pressurized geodesic research habitat housing 80 crew summer / 18 crew winter. Non-sheddable thermal loop and critical ventilation HVAC running 24/7.",
+        badge: "NON-SHEDDABLE",
+        badgeStyle: "background: rgba(239, 68, 68, 0.2); color: var(--red-alert);",
+        tempOffset: 72.4,
+        health: "100% SECURE",
+        priority: "CRITICAL LIFE-SAFETY",
+        nodeId: "mapNode_habitat",
+        getPower: (p) => `${p.criticalDemandKw.toFixed(1)} kW`
+      },
+      drill: {
+        code: "SECTOR ZETA",
+        title: "Deep Ice Core Drill & LIDAR Facility",
+        desc: "Palaeoclimate ice core extraction drilling down to 3,000m bedrock and atmospheric aerosol LIDAR laser spectrometer. Flexible deferrable load.",
+        badge: "FLEXIBLE LOAD",
+        badgeStyle: "background: rgba(168, 85, 247, 0.2); color: var(--violet-neon);",
+        tempOffset: -5.0,
+        health: "91% OPERATIONAL",
+        priority: "SHEDDABLE SCIENTIFIC",
+        nodeId: "mapNode_drill",
+        getPower: (p) => `${p.flexibleDemandKw.toFixed(1)} kW`
+      }
+    };
+
+    let activeSectorKey = "wind";
+
+    function selectMapSector(key) {
+      if (!SECTOR_METADATA[key]) return;
+      activeSectorKey = key;
+
+      document.querySelectorAll(".clickable-sector").forEach(el => el.classList.remove("selected-sector"));
+      const targetNode = document.getElementById(SECTOR_METADATA[key].nodeId);
+      if (targetNode) targetNode.classList.add("selected-sector");
+
+      if (window.starX && window.starX.state) {
+        refreshActiveSectorInspector(window.starX.state);
+      }
+    }
+
+    function refreshActiveSectorInspector(state) {
+      const meta = SECTOR_METADATA[activeSectorKey];
+      if (!meta) return;
+
+      const p = state.power;
+      const env = state.env;
+
+      const elCode = document.getElementById("inspSectorCode");
+      if (elCode) elCode.textContent = meta.code;
+      const elTitle = document.getElementById("inspSectorTitle");
+      if (elTitle) elTitle.textContent = meta.title;
+      const elDesc = document.getElementById("inspSectorDesc");
+      if (elDesc) elDesc.textContent = meta.desc;
+
+      const badge = document.getElementById("inspSectorBadge");
+      if (badge) {
+        badge.textContent = meta.badge;
+        badge.style.cssText = meta.badgeStyle;
+      }
+
+      const elPower = document.getElementById("inspStatPower");
+      if (elPower) elPower.textContent = meta.getPower(p);
+      const tempVal = (env.outdoorTempC + meta.tempOffset).toFixed(1);
+      const elTemp = document.getElementById("inspStatTemp");
+      if (elTemp) elTemp.textContent = `${tempVal} °C`;
+      const elHealth = document.getElementById("inspStatHealth");
+      if (elHealth) elHealth.textContent = meta.health;
+      const elPriority = document.getElementById("inspStatPriority");
+      if (elPriority) elPriority.textContent = meta.priority;
+    }
+
+    function cycleNextSector() {
+      const keys = Object.keys(SECTOR_METADATA);
+      const nextIdx = (keys.indexOf(activeSectorKey) + 1) % keys.length;
+      selectMapSector(keys[nextIdx]);
+    }
+
+    function pulseSectorAction() {
+      const btn = event.target;
+      const originalText = btn.textContent;
+      btn.textContent = "✓ CYCLE EXECUTED";
+      btn.style.background = "var(--emerald-neon)";
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.background = "";
+      }, 1500);
+    }
+
+    // Sandbox Controls Handlers
+    function onTempSliderChange(val) {
+      document.getElementById("valTempSlider").innerText = `${parseFloat(val).toFixed(1)} °C`;
+      window.starX.setSandboxEnvironment("outdoorTempC", val);
+    }
+
+    function onWindSliderChange(val) {
+      document.getElementById("valWindSlider").innerText = `${parseFloat(val).toFixed(1)} m/s`;
+      window.starX.setSandboxEnvironment("windSpeedMps", val);
+    }
+
+    function onHumiditySliderChange(val) {
+      document.getElementById("valHumiditySlider").innerText = `${val} % (Factor: ${window.starX.calculateIcingFactor(window.starX.state.env.outdoorTempC, val, window.starX.state.env.windSpeedMps).toFixed(2)})`;
+      window.starX.setSandboxEnvironment("relativeHumidityPct", val);
+    }
+
+    function onSocSliderChange(val) {
+      document.getElementById("valSocSlider").innerText = `${val} %`;
+      window.starX.setBatterySoc(val);
+    }
+
+    function resetSandbox() {
+      document.getElementById("sliderTemp").value = -52.4;
+      document.getElementById("sliderWind").value = 14.8;
+      document.getElementById("sliderHumidity").value = 76;
+      document.getElementById("sliderSoc").value = 62;
+      onTempSliderChange(-52.4);
+      onWindSliderChange(14.8);
+      onHumiditySliderChange(76);
+      onSocSliderChange(62);
+    }
+
+    // Weather Modal Handlers
+    function openWeatherModal() {
+      document.getElementById("weatherModal").classList.add("active");
+    }
+
+    function closeWeatherModal() {
+      document.getElementById("weatherModal").classList.remove("active");
+      document.getElementById("weatherModalStatus").innerText = "";
+    }
+
+    async function executeWeatherFetch() {
+      const statusEl = document.getElementById("weatherModalStatus");
+      const key = document.getElementById("weatherApiKey").value.trim();
+      statusEl.innerText = "Querying live weather endpoint...";
+
+      const res = await window.starX.fetchLiveGoogleWeather(key || null);
+      if (res.success) {
+        statusEl.style.color = "var(--emerald-neon)";
+        statusEl.innerText = `✓ Successfully loaded ${res.count} forecast hours from ${res.source}!`;
+        setTimeout(() => {
+          closeWeatherModal();
+        }, 1200);
+      } else {
+        statusEl.style.color = "var(--amber-neon)";
+        statusEl.innerText = `Note: ${res.error}. Loaded calibrated polar model.`;
+      }
+    }
+  </script>
+</body>
+</html>

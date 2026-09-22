@@ -1684,96 +1684,6 @@
       }
     }
 
-    /* Interactive Enhancements: Clickable Nodes, Assets, Controller Switcher & Subsystem Modals */
-    .clickable-hover {
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .clickable-hover:hover {
-      transform: translateY(-3px);
-      border-color: var(--cyan-neon) !important;
-      box-shadow: 0 0 20px rgba(0, 240, 255, 0.35);
-    }
-    .flow-node.clickable-hover .flow-inspect-tag {
-      font-size: 0.65rem;
-      font-family: var(--font-mono);
-      color: var(--cyan-neon);
-      margin-top: 4px;
-      display: inline-block;
-      text-decoration: underline;
-    }
-    .asset-card.clickable-hover:hover {
-      border-color: var(--cyan-neon);
-      box-shadow: 0 0 18px rgba(0, 240, 255, 0.25);
-    }
-    .controller-mode-toggle {
-      display: flex;
-      background: rgba(4, 8, 16, 0.7);
-      border: 1px solid var(--border-subtle);
-      border-radius: 8px;
-      padding: 3px;
-      gap: 4px;
-    }
-    .btn-ctrl-mode {
-      background: transparent;
-      border: none;
-      color: var(--text-secondary);
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-    .btn-ctrl-mode.active {
-      background: rgba(0, 240, 255, 0.2);
-      color: var(--cyan-neon);
-      border: 1px solid rgba(0, 240, 255, 0.4);
-    }
-    .subsystem-modal-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-      margin: 1rem 0;
-    }
-    .subsystem-stat-box {
-      background: rgba(9, 18, 32, 0.8);
-      border: 1px solid var(--border-glass);
-      border-radius: 8px;
-      padding: 0.75rem;
-    }
-    .subsystem-stat-box .lbl {
-      font-size: 0.7rem;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      font-weight: 700;
-    }
-    .subsystem-stat-box .val {
-      font-family: var(--font-mono);
-      font-size: 1.15rem;
-      color: #ffffff;
-      font-weight: 700;
-      margin-top: 0.2rem;
-    }
-    .subsystem-action-btn {
-      width: 100%;
-      background: linear-gradient(135deg, #0051ff, #00e5ff);
-      color: #040810;
-      border: none;
-      border-radius: 8px;
-      padding: 0.65rem 1rem;
-      font-family: var(--font-display);
-      font-weight: 800;
-      font-size: 0.85rem;
-      cursor: pointer;
-      margin-top: 0.5rem;
-      transition: all 0.2s ease;
-    }
-    .subsystem-action-btn:hover {
-      box-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
-    }
-
   </style>
 </head>
 <body>
@@ -1804,15 +1714,6 @@
       <div class="mode-chip mode-normal" id="operatingModeChip">
         ● NORMAL OPERATION
       </div>
-      <a href="starx.html" id="btnCommandCenter" class="btn-header" onclick="navigateToCommandCenter(event)" style="background: linear-gradient(135deg, rgba(0, 240, 255, 0.25), rgba(41, 121, 255, 0.35)); border: 1px solid var(--cyan-neon); color: #ffffff; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 700; box-shadow: 0 0 14px rgba(0, 240, 255, 0.35); transition: all 0.2s ease;">
-        🗺️ MAPPING & COMMAND CENTER
-      </a>
-      <button class="btn-header" style="border-color: rgba(0, 240, 255, 0.4); color: var(--cyan-neon); background: rgba(0, 240, 255, 0.1);" onclick="openLiveWeatherModal()">
-        ⛅ LIVE WEATHER INGEST
-      </button>
-      <button class="btn-header" onclick="exportTelemetryCsv()">
-        📥 EXPORT CSV
-      </button>
       <button class="btn-header" id="btnToggleDemoMode" onclick="toggleHackathonDemoMode()">
         🎮 HACKATHON DEMO MODE
       </button>
@@ -1978,57 +1879,50 @@
       </div>
       <div class="flow-diagram-container">
         <!-- Solar Node -->
-        <div class="flow-node clickable-hover" onclick="openSubsystemModal('solar')" title="Click to manage Solar PV array">
+        <div class="flow-node">
           <div class="flow-node-title">☀️ Solar PV Array</div>
           <div class="flow-node-val" id="flowSolar">0.0 kW</div>
           <div class="flow-node-sub" id="flowSolarSub">Polar Night Clamped</div>
-          <div class="flow-inspect-tag">⚙️ Manage & Control</div>
         </div>
 
         <!-- Wind Node -->
-        <div class="flow-node clickable-hover" onclick="openSubsystemModal('wind')" title="Click to manage Wind Turbines & De-icers">
+        <div class="flow-node">
           <div class="flow-node-title">🌬️ Wind Turbines</div>
           <div class="flow-node-val" id="flowWind">24.5 kW</div>
           <div class="flow-node-sub" id="flowWindSub">Icing Factor: 0.45</div>
-          <div class="flow-inspect-tag">⚙️ Manage & Control</div>
         </div>
 
         <!-- Battery Node -->
-        <div class="flow-node clickable-hover" onclick="openSubsystemModal('battery')" title="Click to manage BESS Battery Storage">
+        <div class="flow-node">
           <div class="flow-node-title">🔋 Battery BESS</div>
           <div class="flow-node-val" id="flowBattery">+34.0 kW</div>
           <div class="flow-node-sub" id="flowBatterySub">Discharging (42% SoC)</div>
-          <div class="flow-inspect-tag">⚙️ Manage & Control</div>
         </div>
 
         <!-- Diesel Node -->
-        <div class="flow-node clickable-hover" onclick="openSubsystemModal('diesel')" title="Click to manage Diesel Generators">
+        <div class="flow-node">
           <div class="flow-node-title">⛽ Diesel Gensets</div>
           <div class="flow-node-val" id="flowDiesel">50.0 kW</div>
           <div class="flow-node-sub" id="flowDieselSub">Gen #1 (50 kW) • Gen #2 (Idle)</div>
-          <div class="flow-inspect-tag">⚙️ Manage & Control</div>
         </div>
 
         <!-- Central Bus -->
-        <div class="flow-bus clickable-hover" onclick="openSubsystemModal('bus')" title="Click to inspect central bus diagnostics">
+        <div class="flow-bus">
           AC/DC BUS<br>400V 50Hz
-          <div class="flow-inspect-tag" style="font-size: 0.6rem;">Diagnostics ⚙️</div>
         </div>
 
         <!-- Critical Demand Node -->
-        <div class="flow-node clickable-hover" style="border-color: rgba(0, 230, 118, 0.4);" onclick="openSubsystemModal('critical')" title="Click to inspect Life Support thermal loops">
+        <div class="flow-node" style="border-color: rgba(0, 230, 118, 0.4);">
           <div class="flow-node-title" style="color: var(--green-neon);">🛡️ Critical Heating</div>
           <div class="flow-node-val" id="flowCrit" style="color: var(--green-neon);">75.0 kW</div>
           <div class="flow-node-sub">100% Uncurtailed</div>
-          <div class="flow-inspect-tag">⚙️ Inspect Envelope</div>
         </div>
 
         <!-- Flexible Demand Node -->
-        <div class="flow-node clickable-hover" style="border-color: rgba(179, 136, 255, 0.4);" onclick="openSubsystemModal('flexible')" title="Click to manage Flexible Science Shedding">
+        <div class="flow-node" style="border-color: rgba(179, 136, 255, 0.4);">
           <div class="flow-node-title" style="color: var(--purple-accent);">🧪 Science & Operations</div>
           <div class="flow-node-val" id="flowFlex" style="color: var(--purple-accent);">33.5 kW</div>
           <div class="flow-node-sub" id="flowFlexSub">Active: Drill, Lidar</div>
-          <div class="flow-inspect-tag">⚙️ Manage Shedding</div>
         </div>
       </div>
     </section>
@@ -2102,32 +1996,26 @@
 
       <!-- Card 2: Why Not Just Rules? Comparative Panel -->
       <div class="rules-comparison-panel">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-          <div class="panel-title">
-            <span>⚖️ CONTROLLER COMPARISON ENGINE</span>
-          </div>
-          <div class="controller-mode-toggle">
-            <button class="btn-ctrl-mode active" id="btnCtrlBoreas" onclick="setControllerDispatchMode('boreas')">🤖 BOREAS MPC (AI)</button>
-            <button class="btn-ctrl-mode" id="btnCtrlReactive" onclick="setControllerDispatchMode('reactive')">⏱️ REACTIVE RULES</button>
-          </div>
+        <div class="panel-title">
+          <span>⚖️ WHY NOT JUST USE REACTIVE RULES?</span>
         </div>
-        <div class="rules-flow-box rules-reactive" id="boxReactiveRules" style="transition: all 0.3s ease;">
+        <div class="rules-flow-box rules-reactive">
           <h4>❌ Reactive Rule-Based System (Traditional Microgrid)</h4>
           <p style="color: var(--text-secondary); line-height: 1.4;">
             <code>Battery low? → Start diesel.</code> Waits until battery drains before firing diesel. In freezing fog blizzards, causes deep battery freeze damage and excessive generator fuel wet-stacking.
           </p>
         </div>
 
-        <div class="rules-flow-box rules-boreas" id="boxBoreasMpc" style="transition: all 0.3s ease;">
+        <div class="rules-flow-box rules-boreas">
           <h4>✅ BOREAS Predictive Model Predictive Control (MPC)</h4>
           <p style="color: var(--text-secondary); line-height: 1.4;">
             <code>Forecast weather → Anticipate icing derate → Detect deficit window → Pre-schedule battery buffer → Shed flexible drill load → Protect life support.</code>
           </p>
         </div>
 
-        <div style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--green-neon); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
-          <span>Annual Diesel Saved: <strong id="lblFuelSavedComparison">+18,153 L (9.2%)</strong></span>
-          <span>Controller Mode: <strong id="lblActiveController" style="color: var(--cyan-neon);">PREDICTIVE MPC ACTIVE</strong></span>
+        <div style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--green-neon); display: flex; justify-content: space-between;">
+          <span>Annual Diesel Saved: <strong>+18,153 L (9.2%)</strong></span>
+          <span>Critical Outages: <strong>0 Hours</strong></span>
         </div>
       </div>
     </section>
@@ -2261,32 +2149,28 @@
 
     <!-- ROW 6: ASSET HEALTH -->
     <section class="health-grid">
-      <div class="asset-card clickable-hover" onclick="openSubsystemModal('gen1')" title="Click to manage Gen #1 governor & controls">
+      <div class="asset-card">
         <h4><span>Primary Generator #1 (100 kW)</span> <span style="color: var(--green-neon);" id="assetGen1Status">ONLINE</span></h4>
         <div class="metric-row"><span>Load:</span><span class="val" id="assetGen1Load">45 kW</span></div>
         <div class="metric-row"><span>Fuel Drift Anomaly:</span><span class="val" style="color: var(--green-neon);">0.0% (Nominal)</span></div>
-        <div style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--cyan-neon); margin-top: 6px;">Manage Governor & Setpoint ⚙️</div>
       </div>
 
-      <div class="asset-card clickable-hover" onclick="openSubsystemModal('gen2')" title="Click to manage Gen #2 auto-sync & peaking">
+      <div class="asset-card">
         <h4><span>Backup Generator #2 (100 kW)</span> <span style="color: var(--cyan-neon);" id="assetGen2Status">STANDBY</span></h4>
         <div class="metric-row"><span>Auto-Sync Ready:</span><span class="val" style="color: var(--green-neon);">YES</span></div>
         <div class="metric-row"><span>Block Heater:</span><span class="val">ACTIVE (45°C)</span></div>
-        <div style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--cyan-neon); margin-top: 6px;">Peaking Fire & Auto-Sync ⚙️</div>
       </div>
 
-      <div class="asset-card clickable-hover" onclick="openSubsystemModal('battery')" title="Click to manage BESS thermal & cold floor">
+      <div class="asset-card">
         <h4><span>LiFePO4 Battery BESS (300 kWh)</span> <span style="color: var(--green-neon);" id="assetBatStatus">HEALTHY</span></h4>
         <div class="metric-row"><span>Internal Enclosure Temp:</span><span class="val">+18.5 °C</span></div>
         <div class="metric-row"><span>Cold Battery Protection:</span><span class="val" id="assetBatColdMode" style="color: var(--cyan-neon);">STANDBY</span></div>
-        <div style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--cyan-neon); margin-top: 6px;">Thermal Floor & C-Rate Controls ⚙️</div>
       </div>
 
-      <div class="asset-card clickable-hover" onclick="openSubsystemModal('wind')" title="Click to trigger blade de-icing">
+      <div class="asset-card">
         <h4><span>Cold-Climate Wind Turbines</span> <span style="color: var(--amber-warn);" id="assetWindStatus">ICING ACTIVE</span></h4>
         <div class="metric-row"><span>Blade Icing Factor:</span><span class="val" id="assetIcingVal">0.45</span></div>
         <div class="metric-row"><span>Rime Icing Loss:</span><span class="val" id="assetIcingLoss">-55% Derate</span></div>
-        <div style="font-size: 0.72rem; font-family: var(--font-mono); color: var(--cyan-neon); margin-top: 6px;">Run Electro-Thermal De-Icing ⚡</div>
       </div>
     </section>
 
@@ -2343,77 +2227,6 @@
     </section>
   </main>
 
-  <!-- Interactive Subsystem Management & Diagnostics Modal -->
-  <div class="modal-overlay" id="subsystemModal" onclick="closeSubsystemModal(event)">
-    <div class="modal-box" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <h3 id="subsystemModalTitle" style="font-family: var(--font-display); color: var(--cyan-neon);">Subsystem Control & Diagnostics</h3>
-        <button class="btn-close" onclick="closeSubsystemModal()">✕</button>
-      </div>
-      <p id="subsystemModalDesc" style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
-        Operational telemetry and manual operator override controls for isolated polar microgrid assets.
-      </p>
-
-      <div class="subsystem-modal-grid">
-        <div class="subsystem-stat-box">
-          <div class="lbl">Asset Health</div>
-          <div class="val" id="subsystemStatHealth" style="color: var(--green-neon);">100% HEALTHY</div>
-        </div>
-        <div class="subsystem-stat-box">
-          <div class="lbl">Current Output / Load</div>
-          <div class="val" id="subsystemStatOutput">0.0 kW</div>
-        </div>
-        <div class="subsystem-stat-box">
-          <div class="lbl">Efficiency / Factor</div>
-          <div class="val" id="subsystemStatEfficiency">1.00</div>
-        </div>
-        <div class="subsystem-stat-box">
-          <div class="lbl">Autonomous Status</div>
-          <div class="val" id="subsystemStatStatus" style="color: var(--cyan-neon);">AI CONTROLLED</div>
-        </div>
-      </div>
-
-      <div id="subsystemActionArea" style="margin-top: 1rem;">
-        <!-- Dynamic Action Buttons populated based on clicked subsystem -->
-      </div>
-    </div>
-  </div>
-
-  <!-- Google Weather Ingestion Modal -->
-  <div class="modal-overlay" id="liveWeatherModal" onclick="closeLiveWeatherModal(event)">
-    <div class="modal-box" onclick="event.stopPropagation()">
-      <div class="modal-header">
-        <h3 style="font-family: var(--font-display); color: var(--cyan-neon);">⛅ Google Weather API Live Ingest</h3>
-        <button class="btn-close" onclick="closeLiveWeatherModal()">✕</button>
-      </div>
-      <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 1rem;">
-        Query live hourly meteorological forecast data from Google Weather API endpoint <code>v1/forecast/hours:lookup</code>.
-      </p>
-
-      <div style="display: flex; flex-direction: column; gap: 0.85rem;">
-        <div>
-          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">STATION COORDINATES</label>
-          <div style="display: flex; gap: 0.5rem; margin-top: 0.3rem;">
-            <input type="text" id="gwInputLat" value="-78.5" style="width: 50%; padding: 0.5rem; background: #040810; border: 1px solid var(--border-glass); color: #fff; border-radius: 6px; font-family: var(--font-mono);" placeholder="Lat">
-            <input type="text" id="gwInputLon" value="166.66" style="width: 50%; padding: 0.5rem; background: #040810; border: 1px solid var(--border-glass); color: #fff; border-radius: 6px; font-family: var(--font-mono);" placeholder="Lon">
-          </div>
-        </div>
-
-        <div>
-          <label style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">GOOGLE API KEY (OPTIONAL)</label>
-          <input type="password" id="gwInputKey" style="width: 100%; margin-top: 0.3rem; padding: 0.5rem; background: #040810; border: 1px solid var(--border-glass); color: #fff; border-radius: 6px; font-family: var(--font-mono);" placeholder="Leave blank for calibrated polar simulation">
-        </div>
-
-        <div id="gwModalStatusMsg" style="font-size: 0.78rem; font-family: var(--font-mono); color: var(--cyan-neon); min-height: 18px;"></div>
-
-        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
-          <button class="btn-control" onclick="closeLiveWeatherModal()">Cancel</button>
-          <button class="btn-scenario-quick" style="background: linear-gradient(135deg, #0051ff, #00e5ff); color: #040810; font-weight: bold;" onclick="runLiveWeatherIngest()">⚡ Ingest Weather Forecast</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- Modal / Event Inspector Drawer -->
   <div class="modal-overlay" id="eventModal" onclick="closeModal(event)">
     <div class="modal-box" onclick="event.stopPropagation()">
@@ -2455,10 +2268,6 @@
       <span class="dock-icon">🎛️</span>
       <span class="dock-label">Loads</span>
     </button>
-    <a href="starx.html" onclick="navigateToCommandCenter(event)" class="nav-dock-btn" style="text-decoration: none; color: inherit;">
-      <span class="dock-icon">🗺️</span>
-      <span class="dock-label">Map/CMD</span>
-    </a>
   </nav>
 
   <footer>
@@ -2466,26 +2275,6 @@
   </footer>
 
   <script>
-    // Automatic Backend Discovery (Supports localhost:8000, 127.0.0.1, LiveServer, and file:// protocol)
-    const API_BASE = (window.location.protocol === 'file:' || (window.location.port !== '8000' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname === '')))
-      ? 'http://127.0.0.1:8000'
-      : '';
-
-    // Navigation to Mapping & Command Center
-    function navigateToCommandCenter(e) {
-      if (e) e.preventDefault();
-      if (window.location.protocol === 'file:') {
-        const p = window.location.pathname;
-        if (p.includes('/dashboard/') || p.includes('\\dashboard\\')) {
-          window.location.href = 'starx.html';
-        } else {
-          window.location.href = 'starx.html';
-        }
-      } else {
-        window.location.href = '/starx.html';
-      }
-    }
-
     // State Variables
     let currentStep = 4716;
     let isStreaming = false;
@@ -2516,7 +2305,7 @@
       initChart();
       refreshDigitalTwin();
       loadTimelineEvents();
-      triggerScenario("blizzard"); // load initial scenario comparison
+      runScenarioRequest("blizzard"); // load initial scenario comparison
     });
 
 
@@ -2655,32 +2444,11 @@
       const renewTotal = solarGen + windEffective;
 
       const critLoad = 65.0 + Math.max(0, (-20.0 - outdoorTemp) * 0.82);
-
-      // Dynamically calculate flexible demand from interactive operator switches
-      let flexLoad = 0.0;
-      let curtailedKw = 0.0;
-      const drillOn = document.getElementById("toggle_drill") ? document.getElementById("toggle_drill").checked : true;
-      const lidarOn = document.getElementById("toggle_lidar") ? document.getElementById("toggle_lidar").checked : true;
-      const skidooOn = document.getElementById("toggle_skidoo") ? document.getElementById("toggle_skidoo").checked : true;
-      const laundryOn = document.getElementById("toggle_laundry") ? document.getElementById("toggle_laundry").checked : true;
-      const saunaOn = document.getElementById("toggle_sauna") ? document.getElementById("toggle_sauna").checked : true;
-
-      if (drillOn) flexLoad += 45.0; else curtailedKw += 45.0;
-      if (lidarOn) flexLoad += 20.0; else curtailedKw += 20.0;
-      if (skidooOn) flexLoad += 15.0; else curtailedKw += 15.0;
-      if (laundryOn) flexLoad += 10.0; else curtailedKw += 10.0;
-      if (saunaOn) flexLoad += 10.0; else curtailedKw += 10.0;
-
+      const flexLoad = (isPolarNight && outdoorTemp < -50) ? 12.0 : 45.0;
       const totalDemand = critLoad + flexLoad;
+
       const netDeficit = Math.max(0, totalDemand - renewTotal);
-
-      let dieselGen = 0.0;
-      if (typeof isReactiveModeActive !== "undefined" && isReactiveModeActive) {
-        dieselGen = netDeficit > 5 ? Math.min(130, netDeficit + 12) : 0;
-      } else {
-        dieselGen = netDeficit > 15 ? Math.min(120, netDeficit * 0.85 + 10) : 0;
-      }
-
+      const dieselGen = netDeficit > 15 ? Math.min(120, netDeficit * 0.85 + 10) : 0;
       const battPower = totalDemand - renewTotal - dieselGen;
       const battSoc = Math.max(28.5, Math.min(94.0, 72.0 - (isPolarNight ? 38.0 : 0.0) + Math.sin(step * 0.05) * 18.0));
 
@@ -2690,12 +2458,6 @@
       const date = new Date(2026, 0, 1, 0, 0);
       date.setHours(date.getHours() + step);
       const dateStr = date.toISOString().replace("T", " ").substring(0, 19);
-
-      const fuelRemaining = Math.max(12000, Math.round(284000 - (step * 21.4)));
-      const hourlyBurn = Math.round((dieselGen * 0.28 + (dieselGen > 0 ? 3.5 : 0.0)) * 10) / 10;
-      const autonomyDays = Math.round(Math.max(45, fuelRemaining / (24 * 24.5)));
-      const riskScore = mode === "SURVIVAL" ? 88 : (mode === "WARNING" ? 64 : 18);
-      const isColdProt = outdoorTemp < -35;
 
       return {
         timestamp: dateStr,
@@ -2719,19 +2481,14 @@
           battery_soc_pct: Math.round(battSoc * 10) / 10,
           battery_power_kw: Math.round(battPower * 10) / 10,
           battery_kwh: Math.round(battSoc * 3.0 * 10) / 10,
-          battery_mode: battPower > 5 ? "DISCHARGING" : (battPower < -5 ? "CHARGING" : "STANDBY"),
-          battery_online: true,
-          cold_battery_protection_active: isColdProt,
           diesel_generation_kw: Math.round(dieselGen * 10) / 10,
-          diesel_fuel_reserve_liters: fuelRemaining,
-          hourly_fuel_burn_liters: hourlyBurn,
-          total_station_demand_kw: Math.round(totalDemand * 10) / 10,
-          critical_demand_kw: Math.round(critLoad * 10) / 10,
-          flexible_demand_kw: Math.round(flexLoad * 10) / 10,
-          curtailed_flexible_kw: Math.round(curtailedKw * 10) / 10,
-          critical_load_met_pct: 100.0,
-          diesel_generator_1_online: true,
-          diesel_generator_2_online: dieselGen > 60,
+          diesel_fuel_flow_lph: Math.round((dieselGen * 0.28 + 2.5) * 10) / 10,
+          fuel_remaining_liters: Math.max(12000, Math.round(284000 - (step * 21.4))),
+          fuel_burn_rate_lph: Math.round((dieselGen * 0.28 + 2.5) * 10) / 10,
+          fuel_burn_percent: Math.min(100, Math.round(((dieselGen * 0.28 + 2.5) / 38.0) * 100)),
+          fuel_reserve_days: Math.round(Math.max(45, (284000 - (step * 21.4)) / (24 * 24.5))),
+          resupply_countdown_days: Math.max(0, Math.round((8760 - step) / 24)),
+          fuel_safety_status: mode === "SURVIVAL" ? "CRITICAL DEFICIT" : "SECURE"
         },
         station: {
           operating_mode: mode,
@@ -2740,7 +2497,7 @@
           total_demand_kw: Math.round(totalDemand * 10) / 10,
           heating_life_support_kw: Math.round(critLoad * 0.72 * 10) / 10,
           flexible_load_status: flexLoad < 30 ? "CURTAILED / SHED" : "NORMAL",
-          curtailed_kw: Math.round(curtailedKw * 10) / 10,
+          curtailed_kw: flexLoad < 30 ? 33.0 : 0.0,
           diesel_gen1_kw: Math.round(dieselGen * 0.65 * 10) / 10,
           diesel_gen2_kw: Math.round(dieselGen * 0.35 * 10) / 10,
           diesel_gen1_status: "RUNNING",
@@ -2748,17 +2505,12 @@
           total_diesel_kw: Math.round(dieselGen * 10) / 10
         },
         risk: {
-          level: mode,
-          score: riskScore,
           risk_level: mode,
-          autonomy_days: autonomyDays,
-          primary_causes: isSurvival ? ["Sub-zero thermal deficit (-55.4°C)", "Solar irradiance collapsed to 0 kW"] : ["Nominal baseline operation"],
-          battery_thermal_risk: outdoorTemp < -45 ? "HIGH (30% Freeze Floor Enforced)" : "LOW",
-          recommended_action: mode === "SURVIVAL" ? "Shed flexible loads; pre-warm backup genset #2." : "Maintain automated lookahead MPC dispatch.",
-          resupply_buffer_margin_pct: Math.round(((fuelRemaining - 12000) / 284000) * 100),
+          autonomy_days: Math.round(Math.max(45, (284000 - (step * 21.4)) / (24 * 24.5))),
+          primary_causes: isSurvival ? ["Sub-zero thermal deficit (-55.4°C)", "Solar irradiance collapsed to 0 kW"] : ["Normal baseline operation"],
+          battery_thermal_risk: outdoorTemp < -45 ? "HIGH (30% Freeze Floor Enforced)" : "LOW"
         },
         decision: {
-          action: mode === "SURVIVAL" ? "SHED FLEXIBLE LOAD" : (dieselGen > 0 ? "DISPATCH DIESEL" : "RENEWABLE DIRECT"),
           current_action: mode === "SURVIVAL" ? "Shed Ice Drill + Elevate Battery Floor to 30%" : (dieselGen > 0 ? "Dispatch Genset #1 in High-Efficiency Band (45 kW)" : "Max Solar/Wind Battery Charging"),
           why: isPolarNight ? "Mid-winter darkness: solar is 0.0 kW. Critical habitat heating requires 82 kW." : "Surplus wind and solar generation available; preserving diesel reserves for winter.",
           forecast: "Lookahead MPC identifies deficit window in 18 hours.",
@@ -2859,88 +2611,44 @@
     }
 
     function generateClientScenario(scenId, step) {
-      const scenarios = {
-        "blizzard": {
+      if (scenId === "blizzard") {
+        return {
           scenario_id: "blizzard",
-          before: { fuel_consumed_liters: 1840, battery_min_soc_pct: 45.0, curtailed_flexible_kw: 0 },
-          after: { fuel_consumed_liters: 2150, battery_min_soc_pct: 28.5, curtailed_flexible_kw: 18.5 },
+          before: { fuel_consumed_liters: 1420, battery_min_soc_pct: 18.0, curtailed_flexible_kw: 0 },
+          after: { fuel_consumed_liters: 1180, battery_min_soc_pct: 32.5, curtailed_flexible_kw: 45 },
           comparison: {
-            baseline_reactive: { diesel_fuel_burned_liters: 2540, critical_load_served_pct: 98.2, flexible_curtailed_kw: 45.0 },
-            boreas_ai: { diesel_fuel_burned_liters: 2150, critical_load_served_pct: 100.0, flexible_curtailed_kw: 18.5, fuel_saved_liters: 390 }
+            baseline_reactive: { diesel_fuel_burned_liters: 1420, critical_load_served_pct: 94.2, flexible_curtailed_kw: 0 },
+            boreas_ai: { diesel_fuel_burned_liters: 1180, critical_load_served_pct: 100.0, flexible_curtailed_kw: 45, fuel_saved_liters: 240 }
           }
-        },
-        "diesel-failure": {
+        };
+      } else if (scenId === "diesel-failure") {
+        return {
           scenario_id: "diesel-failure",
-          before: { fuel_consumed_liters: 1720, battery_min_soc_pct: 48.0, curtailed_flexible_kw: 0 },
-          after: { fuel_consumed_liters: 1540, battery_min_soc_pct: 26.0, curtailed_flexible_kw: 25.0 },
+          before: { fuel_consumed_liters: 1650, battery_min_soc_pct: 15.0, curtailed_flexible_kw: 0 },
+          after: { fuel_consumed_liters: 1390, battery_min_soc_pct: 28.0, curtailed_flexible_kw: 55 },
           comparison: {
-            baseline_reactive: { diesel_fuel_burned_liters: 1980, critical_load_served_pct: 88.5, flexible_curtailed_kw: 65.0 },
-            boreas_ai: { diesel_fuel_burned_liters: 1540, critical_load_served_pct: 100.0, flexible_curtailed_kw: 25.0, fuel_saved_liters: 440 }
+            baseline_reactive: { diesel_fuel_burned_liters: 1650, critical_load_served_pct: 88.5, flexible_curtailed_kw: 0 },
+            boreas_ai: { diesel_fuel_burned_liters: 1390, critical_load_served_pct: 100.0, flexible_curtailed_kw: 55, fuel_saved_liters: 260 }
           }
-        },
-        "battery-failure": {
+        };
+      } else {
+        return {
           scenario_id: "battery-failure",
-          before: { fuel_consumed_liters: 1650, battery_min_soc_pct: 50.0, curtailed_flexible_kw: 0 },
-          after: { fuel_consumed_liters: 1920, battery_min_soc_pct: 0.0, curtailed_flexible_kw: 20.0 },
+          before: { fuel_consumed_liters: 1580, battery_min_soc_pct: 12.0, curtailed_flexible_kw: 0 },
+          after: { fuel_consumed_liters: 1410, battery_min_soc_pct: 30.0, curtailed_flexible_kw: 40 },
           comparison: {
-            baseline_reactive: { diesel_fuel_burned_liters: 2310, critical_load_served_pct: 92.0, flexible_curtailed_kw: 55.0 },
-            boreas_ai: { diesel_fuel_burned_liters: 1920, critical_load_served_pct: 100.0, flexible_curtailed_kw: 20.0, fuel_saved_liters: 390 }
+            baseline_reactive: { diesel_fuel_burned_liters: 1580, critical_load_served_pct: 91.0, flexible_curtailed_kw: 0 },
+            boreas_ai: { diesel_fuel_burned_liters: 1410, critical_load_served_pct: 100.0, flexible_curtailed_kw: 40, fuel_saved_liters: 170 }
           }
-        },
-        "low-wind": {
-          scenario_id: "low-wind",
-          before: { fuel_consumed_liters: 1320, battery_min_soc_pct: 55.0, curtailed_flexible_kw: 0 },
-          after: { fuel_consumed_liters: 2480, battery_min_soc_pct: 35.0, curtailed_flexible_kw: 15.0 },
-          comparison: {
-            baseline_reactive: { diesel_fuel_burned_liters: 3120, critical_load_served_pct: 95.5, flexible_curtailed_kw: 45.0 },
-            boreas_ai: { diesel_fuel_burned_liters: 2480, critical_load_served_pct: 100.0, flexible_curtailed_kw: 15.0, fuel_saved_liters: 640 }
-          }
-        },
-        "extreme-cold": {
-          scenario_id: "extreme-cold",
-          before: { fuel_consumed_liters: 1780, battery_min_soc_pct: 46.0, curtailed_flexible_kw: 0 },
-          after: { fuel_consumed_liters: 2280, battery_min_soc_pct: 31.0, curtailed_flexible_kw: 30.0 },
-          comparison: {
-            baseline_reactive: { diesel_fuel_burned_liters: 2790, critical_load_served_pct: 91.5, flexible_curtailed_kw: 70.0 },
-            boreas_ai: { diesel_fuel_burned_liters: 2280, critical_load_served_pct: 100.0, flexible_curtailed_kw: 30.0, fuel_saved_liters: 510 }
-          }
-        },
-        "solar-reduction": {
-          scenario_id: "solar-reduction",
-          before: { fuel_consumed_liters: 1450, battery_min_soc_pct: 52.0, curtailed_flexible_kw: 0 },
-          after: { fuel_consumed_liters: 1680, battery_min_soc_pct: 38.0, curtailed_flexible_kw: 10.0 },
-          comparison: {
-            baseline_reactive: { diesel_fuel_burned_liters: 1950, critical_load_served_pct: 99.0, flexible_curtailed_kw: 30.0 },
-            boreas_ai: { diesel_fuel_burned_liters: 1680, critical_load_served_pct: 100.0, flexible_curtailed_kw: 10.0, fuel_saved_liters: 270 }
-          }
-        },
-        "high-crew": {
-          scenario_id: "high-crew",
-          before: { fuel_consumed_liters: 1510, battery_min_soc_pct: 49.0, curtailed_flexible_kw: 0 },
-          after: { fuel_consumed_liters: 1850, battery_min_soc_pct: 34.0, curtailed_flexible_kw: 12.0 },
-          comparison: {
-            baseline_reactive: { diesel_fuel_burned_liters: 2190, critical_load_served_pct: 97.4, flexible_curtailed_kw: 40.0 },
-            boreas_ai: { diesel_fuel_burned_liters: 1850, critical_load_served_pct: 100.0, flexible_curtailed_kw: 12.0, fuel_saved_liters: 340 }
-          }
-        },
-        "multiple-failure": {
-          scenario_id: "multiple-failure",
-          before: { fuel_consumed_liters: 1890, battery_min_soc_pct: 42.0, curtailed_flexible_kw: 0 },
-          after: { fuel_consumed_liters: 2390, battery_min_soc_pct: 22.0, curtailed_flexible_kw: 45.0 },
-          comparison: {
-            baseline_reactive: { diesel_fuel_burned_liters: 2950, critical_load_served_pct: 84.0, flexible_curtailed_kw: 85.0 },
-            boreas_ai: { diesel_fuel_burned_liters: 2390, critical_load_served_pct: 100.0, flexible_curtailed_kw: 45.0, fuel_saved_liters: 560 }
-          }
-        }
-      };
-      return scenarios[scenId] || scenarios["blizzard"];
+        };
+      }
     }
 
 
     // Refresh Digital Twin State from API with Client Simulator Fallback
     async function refreshDigitalTwin() {
       try {
-        const res = await fetch(`${API_BASE}/api/digital-twin/state?step_index=${currentStep}`);
+        const res = await fetch(`/api/digital-twin/state?step_index=${currentStep}`);
         if (!res.ok) throw new Error("API Offline");
         const data = await res.json();
         updateUIWithSnapshot(data);
@@ -2957,23 +2665,18 @@
       refreshAIDecision();
     }
 
-    let lastSnapshotData = null;
-    let activeControllerDispatchMode = 'boreas';
-
     // Update UI components with data snapshot
     function updateUIWithSnapshot(data) {
-      if (!data) return;
-      lastSnapshotData = data;
-      const env = data.environment || {};
-      const eng = data.energy || {};
-      const stn = data.station || {};
-      const rsk = data.risk || {};
-      const dec = data.decision || {};
+      const env = data.environment;
+      const eng = data.energy;
+      const stn = data.station;
+      const rsk = data.risk;
+      const dec = data.decision;
 
       // Header info
-      document.getElementById("topTimeDisplay").innerText = `Hour ${(data.step_index || 0).toLocaleString()} / 8,760`;
-      document.getElementById("currentTimestampLabel").innerText = data.timestamp || "";
-      document.getElementById("timelineSlider").value = data.step_index || 0;
+      document.getElementById("topTimeDisplay").innerText = `Hour ${data.step_index.toLocaleString()} / 8,760`;
+      document.getElementById("currentTimestampLabel").innerText = data.timestamp;
+      document.getElementById("timelineSlider").value = data.step_index;
 
       // Operating Mode Chip
       const modeChip = document.getElementById("operatingModeChip");
@@ -2982,7 +2685,7 @@
         modeChip.classList.add("mode-survival");
         modeChip.innerHTML = "⚠️ SURVIVAL MODE";
         document.getElementById("survivalBanner").classList.add("active");
-        document.getElementById("survivalBannerReason").innerText = (rsk.primary_causes && rsk.primary_causes.length > 0) ? rsk.primary_causes[0] : "Critical energy deficit projected.";
+        document.getElementById("survivalBannerReason").innerText = rsk.primary_causes[0] || "Critical energy deficit projected.";
         document.getElementById("survivalReserveBadge").innerText = `Autonomy: ${rsk.autonomy_days} Days`;
       } else if (stn.operating_mode === "WARNING") {
         modeChip.classList.add("mode-warning");
@@ -3023,23 +2726,22 @@
       document.getElementById("hudBurnRate").innerText = `${eng.hourly_fuel_burn_liters.toFixed(1)} L/h`;
 
       const riskEl = document.getElementById("hudRiskLevel");
-      const rLvl = rsk.level || rsk.risk_level || "NORMAL";
-      riskEl.innerText = rLvl;
-      if (rLvl === "SURVIVAL") riskEl.style.color = "var(--red-alert)";
-      else if (rLvl === "WARNING") riskEl.style.color = "var(--amber-warn)";
-      else if (rLvl === "WATCH") riskEl.style.color = "var(--cyan-neon)";
+      riskEl.innerText = rsk.level;
+      if (rsk.level === "SURVIVAL") riskEl.style.color = "var(--red-alert)";
+      else if (rsk.level === "WARNING") riskEl.style.color = "var(--amber-warn)";
+      else if (rsk.level === "WATCH") riskEl.style.color = "var(--cyan-neon)";
       else riskEl.style.color = "var(--green-neon)";
 
-      document.getElementById("hudRiskScore").innerText = `${rsk.score !== undefined ? rsk.score : 20} / 100`;
+      document.getElementById("hudRiskScore").innerText = `${rsk.score} / 100`;
 
       // Flow diagram
-      document.getElementById("flowSolar").innerText = `${eng.solar_generation_kw || 0} kW`;
+      document.getElementById("flowSolar").innerText = `${eng.solar_generation_kw} kW`;
       document.getElementById("flowSolarSub").innerText = env.daylight_hours === 0 ? "Polar Night Clamped" : `${env.daylight_hours}h Daylight`;
-      document.getElementById("flowWind").innerText = `${eng.wind_effective_kw || 0} kW`;
-      document.getElementById("flowWindSub").innerText = `Icing Factor: ${(env.wind_icing_factor || 1.0).toFixed(2)}`;
-      document.getElementById("flowBattery").innerText = `${(eng.battery_power_kw || 0) > 0 ? '+' : ((eng.battery_power_kw || 0) < 0 ? '-' : '')}${Math.abs(eng.battery_power_kw || 0)} kW`;
-      document.getElementById("flowBatterySub").innerText = `${eng.battery_mode || 'STANDBY'} (${(eng.battery_soc_pct || 50).toFixed(1)}%)`;
-      document.getElementById("flowDiesel").innerText = `${eng.diesel_generation_kw || 0} kW`;
+      document.getElementById("flowWind").innerText = `${eng.wind_effective_kw} kW`;
+      document.getElementById("flowWindSub").innerText = `Icing Factor: ${env.wind_icing_factor.toFixed(2)}`;
+      document.getElementById("flowBattery").innerText = `${eng.battery_power_kw > 0 ? '+' : (eng.battery_power_kw < 0 ? '-' : '')}${Math.abs(eng.battery_power_kw)} kW`;
+      document.getElementById("flowBatterySub").innerText = `${eng.battery_mode} (${eng.battery_soc_pct}%)`;
+      document.getElementById("flowDiesel").innerText = `${eng.diesel_generation_kw} kW`;
       document.getElementById("flowDieselSub").innerText = eng.diesel_generator_1_online ? "Gen #1 Active" : "Gen #1 OFFLINE (Gen #2 Backup)";
       document.getElementById("flowCrit").innerText = `${eng.critical_demand_kw} kW`;
       document.getElementById("flowFlex").innerText = `${eng.flexible_demand_kw} kW`;
@@ -3063,7 +2765,7 @@
     async function refreshForecastChart() {
       let data = null;
       try {
-        const res = await fetch(`${API_BASE}/api/forecast/72h?step_index=${currentStep}&horizon_hours=72`);
+        const res = await fetch(`/api/forecast/72h?step_index=${currentStep}&horizon_hours=72`);
         if (res.ok) {
           data = await res.json();
         }
@@ -3109,7 +2811,7 @@
     async function refreshAIDecision() {
       let card = null;
       try {
-        const res = await fetch(`${API_BASE}/api/ai/decision?step_index=${currentStep}`);
+        const res = await fetch(`/api/ai/decision?step_index=${currentStep}`);
         if (res.ok) {
           card = await res.json();
         }
@@ -3131,7 +2833,7 @@
     let currentTimelineEvents = [];
     async function loadTimelineEvents(scenario = null) {
       try {
-        const url = scenario ? `${API_BASE}/api/ai/timeline?step_index=${currentStep}&active_scenario=${scenario}` : `${API_BASE}/api/ai/timeline?step_index=${currentStep}`;
+        const url = scenario ? `/api/ai/timeline?step_index=${currentStep}&active_scenario=${scenario}` : `/api/ai/timeline?step_index=${currentStep}`;
         const res = await fetch(url);
         if (res.ok) {
           currentTimelineEvents = await res.json();
@@ -3188,7 +2890,7 @@
 
       let data = null;
       try {
-        const res = await fetch(`${API_BASE}/api/scenarios/run`, {
+        const res = await fetch("/api/scenarios/run", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ scenario_id: scenId, step_index: currentStep })
@@ -3235,7 +2937,7 @@
       const sauna = document.getElementById("toggle_sauna").checked;
 
       try {
-        await fetch(`${API_BASE}/api/loads/toggle`, {
+        await fetch("/api/loads/toggle", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ drill, lidar, skidoo, laundry, sauna })
@@ -3362,376 +3064,6 @@
       } else {
         btn.innerText = "⏸ Pause";
         executeDemoStep();
-      }
-    }
-
-    // ----------------------------------------------------
-    // Controller Comparison Engine Mode Toggle
-    // ----------------------------------------------------
-    function setControllerDispatchMode(mode) {
-      activeControllerDispatchMode = mode;
-      const btnBoreas = document.getElementById("btnCtrlBoreas");
-      const btnReactive = document.getElementById("btnCtrlReactive");
-      const boxReactive = document.getElementById("boxReactiveRules");
-      const boxBoreas = document.getElementById("boxBoreasMpc");
-      const lblSaved = document.getElementById("lblFuelSavedComparison");
-      const lblActive = document.getElementById("lblActiveController");
-
-      if (mode === 'reactive') {
-        if (btnBoreas) btnBoreas.classList.remove("active");
-        if (btnReactive) btnReactive.classList.add("active");
-        if (boxReactive) {
-          boxReactive.style.borderColor = "var(--red-alert)";
-          boxReactive.style.background = "rgba(255, 23, 68, 0.12)";
-        }
-        if (boxBoreas) {
-          boxBoreas.style.borderColor = "rgba(0, 240, 255, 0.2)";
-          boxBoreas.style.background = "rgba(0, 240, 255, 0.03)";
-        }
-        if (lblSaved) {
-          lblSaved.innerText = "0 L (No Lookahead Savings)";
-          lblSaved.style.color = "var(--text-muted)";
-        }
-        if (lblActive) {
-          lblActive.innerText = "REACTIVE THRESHOLD (INEFFICIENT)";
-          lblActive.style.color = "var(--red-alert)";
-        }
-      } else {
-        if (btnReactive) btnReactive.classList.remove("active");
-        if (btnBoreas) btnBoreas.classList.add("active");
-        if (boxBoreas) {
-          boxBoreas.style.borderColor = "var(--cyan-neon)";
-          boxBoreas.style.background = "rgba(0, 240, 255, 0.08)";
-        }
-        if (boxReactive) {
-          boxReactive.style.borderColor = "rgba(255, 23, 68, 0.2)";
-          boxReactive.style.background = "rgba(255, 23, 68, 0.03)";
-        }
-        if (lblSaved) {
-          lblSaved.innerText = "+18,153 L (9.2%)";
-          lblSaved.style.color = "var(--green-neon)";
-        }
-        if (lblActive) {
-          lblActive.innerText = "PREDICTIVE MPC ACTIVE";
-          lblActive.style.color = "var(--cyan-neon)";
-        }
-      }
-      refreshDigitalTwin();
-    }
-
-    // ----------------------------------------------------
-    // Subsystem Management & Diagnostics Modal Engine
-    // ----------------------------------------------------
-    let currentSubsystemId = null;
-
-    const SUBSYSTEM_CONFIGS = {
-      solar: {
-        title: "☀️ Photovoltaic Solar Array (150 kWp Bifacial)",
-        desc: "High-latitude elevated solar PV array installed with 65° tilt angle and snow-phobic anti-reflective coating.",
-        health: "100% OPERATIONAL",
-        healthColor: "var(--green-neon)",
-        getOutput: (d) => `${d.energy.solar_generation_kw || 0} kW`,
-        getEff: (d) => (d.environment.daylight_hours === 0) ? "0.00 (Polar Night Clamped)" : `${((d.energy.solar_generation_kw || 0) / 150).toFixed(2)} Capacity Factor`,
-        status: "MPPT INVERTER TRACKING",
-        actions: [
-          { label: "⚡ Trigger Surface Snow-Melt Heating Elements", action: "solar_thermal", primary: true },
-          { label: "Run Inverter String DC Ground Fault Diagnostic", action: "solar_diag" },
-          { label: "Calibrate Azimuth Solar Tracking Setpoints", action: "solar_realign" }
-        ]
-      },
-      wind: {
-        title: "🌬️ Cold-Climate Arctic Wind Turbines (3x 60 kW)",
-        desc: "Class-S arctic wind turbines engineered for -60°C katabatic winds, equipped with internal blade heating elements.",
-        health: "DYNAMIC ICING PROTECTION",
-        healthColor: "var(--amber-warn)",
-        getOutput: (d) => `${d.energy.wind_effective_kw || 0} kW (Wind Speed: ${d.environment.wind_speed_mps} m/s)`,
-        getEff: (d) => `Icing Factor: ${(d.environment.wind_icing_factor || 1.0).toFixed(2)} (-${Math.round((1 - (d.environment.wind_icing_factor || 1.0)) * 100)}% Derate)`,
-        status: "CLOSED-LOOP VARIABLE PITCH",
-        actions: [
-          { label: "⚡ Trigger Rapid Electro-Thermal Blade De-Icing", action: "wind_deice", primary: true },
-          { label: "Feather Turbine Blades (Storm Gale Lock)", action: "wind_feather" },
-          { label: "Run Nacelle Gearbox Oil Heating Cycle", action: "wind_oil_heat" }
-        ]
-      },
-      battery: {
-        title: "🔋 LiFePO4 Battery BESS (300 kWh / 100 kW)",
-        desc: "Containerized lithium-iron-phosphate battery bank enclosed in a thermally insulated liquid glycol HVAC enclosure.",
-        health: "HEALTHY (Zero Dendrite Formation)",
-        healthColor: "var(--green-neon)",
-        getOutput: (d) => `${(d.energy.battery_power_kw || 0) > 0 ? '+' : ''}${d.energy.battery_power_kw || 0} kW (${d.energy.battery_mode || 'STANDBY'})`,
-        getEff: (d) => `State of Charge: ${(d.energy.battery_soc_pct || 50).toFixed(1)}% (Enclosure: +18.5°C)`,
-        status: "GRID-FORMING INVERTER V/f",
-        actions: [
-          { label: "🔥 Boost Enclosure Pre-Heating Jacket (+5°C)", action: "bat_boost_heat", primary: true },
-          { label: "Enforce 30% Cold Weather Freeze Floor Override", action: "bat_floor_override" },
-          { label: "Run Cell State-of-Health & Internal Impedance Sweep", action: "bat_balance" }
-        ]
-      },
-      diesel: {
-        title: "⛽ Dual Arctic Diesel Gensets (2x 100 kW)",
-        desc: "Redundant polar gensets configured with combined heat and power (CHP) heat-recovery loops for station hydronic radiators.",
-        health: "GEN #1 ONLINE / GEN #2 STANDBY",
-        healthColor: "var(--green-neon)",
-        getOutput: (d) => `${d.energy.diesel_generation_kw || 0} kW (Fuel Flow: ${(d.energy.hourly_fuel_burn_liters || 0).toFixed(1)} L/h)`,
-        getEff: (d) => `Reserves: ${(d.energy.diesel_fuel_reserve_liters || 240000).toLocaleString()} L (~${d.risk.autonomy_days || 150} Days Autonomy)`,
-        status: "ISOCHRONOUS GOVERNOR DISPATCH",
-        actions: [
-          { label: "🔄 Engage Transfer Switch: Failover to Gen #2", action: "gen_failover", primary: true },
-          { label: "Adjust Continuous Output Load Ceiling (40 - 95 kW)", action: "gen_gov_adjust" },
-          { label: "Run Fuel Injector Flow Drift Calibration", action: "gen_injector_test" }
-        ]
-      },
-      gen1: {
-        title: "⛽ Primary Generator #1 (100 kW Arctic Genset)",
-        desc: "Tier 4 polar diesel generator with crankcase warming jackets and wet-stacking exhaust burnoff controls.",
-        health: "ONLINE & SYNCHRONIZED",
-        healthColor: "var(--green-neon)",
-        getOutput: (d) => `${Math.min(100, d.energy.diesel_generation_kw || 0)} kW`,
-        getEff: (d) => "Thermal Efficiency: 36.8% (0.285 L/kWh)",
-        status: "CLOSED LOOP SPEED GOVERNOR",
-        actions: [
-          { label: "Adjust Governor Loading Target", action: "gen1_limit" },
-          { label: "Trigger Controlled Wet-Stacking Burnoff Cycle", action: "gen1_burnoff", primary: true },
-          { label: "Emergency Trip Generator #1 (Simulate Outage)", action: "gen1_trip" }
-        ]
-      },
-      gen2: {
-        title: "⛽ Peaking & Backup Generator #2 (100 kW Genset)",
-        desc: "Cold-start ready backup generator connected via automated synchronizing transfer switch with pre-heated block heaters.",
-        health: "HOT STANDBY (Block Warm 45°C)",
-        healthColor: "var(--cyan-neon)",
-        getOutput: (d) => (d.energy.diesel_generator_1_online ? "0.0 kW (Standby)" : `${d.energy.diesel_generation_kw || 0} kW (Active)`),
-        getEff: (d) => "Auto-Sync Ready: 100% (Start Time < 8s)",
-        status: "HOT STANDBY AUTO-DISPATCH",
-        actions: [
-          { label: "⚡ Manual Start & Grid Auto-Synchronize", action: "gen2_start", primary: true },
-          { label: "Test Pre-Heating Glow Plugs & Fuel Solenoids", action: "gen2_test_glow" },
-          { label: "Run 10-Minute Monthly Load Bank Exercise", action: "gen2_exercise" }
-        ]
-      },
-      bus: {
-        title: "⚡ AC Microgrid Distribution Bus (400V / 50Hz 3-Phase)",
-        desc: "Isolated polar microgrid distribution ring with digital protection relays, frequency containment, and bus tie-breakers.",
-        health: "STABLE (400.2 V / 50.01 Hz)",
-        healthColor: "var(--green-neon)",
-        getOutput: (d) => `${d.energy.total_station_demand_kw || 0} kW Station Throughput`,
-        getEff: (d) => "Power Factor: 0.98 Inductive",
-        status: "GRID-FORMING MODE SYNCHRONIZED",
-        actions: [
-          { label: "Run Microgrid Frequency & Harmonics Sweep", action: "bus_sweep", primary: true },
-          { label: "Reset Protection Relay Fault Counters", action: "bus_reclose" },
-          { label: "Simulate Fast Frequency Response (FFR) Reserve Test", action: "bus_ffr_test" }
-        ]
-      },
-      critical: {
-        title: "🛡️ Tier-1 Critical Life Support & Habitat Heating",
-        desc: "Vital station systems: habitat air circulation, hydronic heating loops, water distillation, and life-safety communications.",
-        health: "100% UNINTERRUPTIBLE (N+1 Redundancy)",
-        healthColor: "var(--green-neon)",
-        getOutput: (d) => `${d.energy.critical_demand_kw || 0} kW`,
-        getEff: (d) => "Service Level: 100.0% (Zero Outages Permitted)",
-        status: "PRIORITY 0 DISPATCH LOCK",
-        actions: [
-          { label: "Inspect Hydronic Heating Loop Pressure & Flow", action: "crit_loop_pressure" },
-          { label: "Test Secondary Glycol Circulation Pump", action: "crit_test_pump", primary: true },
-          { label: "Engage Emergency Habitat Shelter Lockdown Protocol", action: "crit_shelter_mode" }
-        ]
-      },
-      flexible: {
-        title: "🧪 Tier-2 Flexible Science, Vehicle & Comfort Loads",
-        desc: "Controllable deferrable loads including ice-core drill rig, atmospheric lidar, skidoo chargers, laundry, and sauna.",
-        health: "DYNAMIC DEMAND MANAGEMENT ACTIVE",
-        healthColor: "var(--cyan-neon)",
-        getOutput: (d) => `${d.energy.flexible_demand_kw || 0} kW (Curtailed: ${d.energy.curtailed_flexible_kw || 0} kW)`,
-        getEff: (d) => "Demand Response: Flexible Shedding Active",
-        status: "AI DEMAND SHEDDER ARMED",
-        actions: [
-          { label: "Curtain All Non-Essential Science Circuits Immediately", action: "flex_curtail_all" },
-          { label: "Restore All Load Circuits to 100% Energized", action: "flex_restore_all", primary: true },
-          { label: "Enforce Scheduled Night-Time EV Charging Only", action: "flex_ev_night" }
-        ]
-      }
-    };
-
-    function openSubsystemModal(subsystemId) {
-      currentSubsystemId = subsystemId;
-      const config = SUBSYSTEM_CONFIGS[subsystemId];
-      if (!config) return;
-
-      const data = lastSnapshotData || generateClientDigitalTwin(currentStep);
-
-      document.getElementById("subsystemModalTitle").innerText = config.title;
-      document.getElementById("subsystemModalDesc").innerText = config.desc;
-
-      const healthEl = document.getElementById("subsystemStatHealth");
-      healthEl.innerText = config.health;
-      healthEl.style.color = config.healthColor;
-
-      document.getElementById("subsystemStatOutput").innerText = config.getOutput(data);
-      document.getElementById("subsystemStatEfficiency").innerText = config.getEff(data);
-      document.getElementById("subsystemStatStatus").innerText = config.status;
-
-      const actionArea = document.getElementById("subsystemActionArea");
-      actionArea.innerHTML = "";
-
-      config.actions.forEach(act => {
-        const btn = document.createElement("button");
-        btn.className = "btn-control";
-        btn.style.width = "100%";
-        btn.style.marginBottom = "0.5rem";
-        btn.style.padding = "0.6rem 0.8rem";
-        btn.style.textAlign = "left";
-        btn.style.display = "flex";
-        btn.style.justifyContent = "space-between";
-        btn.style.alignItems = "center";
-        if (act.primary) {
-          btn.style.borderColor = "var(--green-neon)";
-          btn.style.color = "var(--green-neon)";
-        }
-        btn.innerHTML = `<span>${act.label}</span> <span style="font-family: var(--font-mono); font-size: 0.72rem; color: var(--cyan-neon);">EXECUTE ▶</span>`;
-        btn.onclick = () => triggerSubsystemAction(act.action, act.label);
-        actionArea.appendChild(btn);
-      });
-
-      document.getElementById("subsystemModal").classList.add("active");
-    }
-
-    function closeSubsystemModal(e) {
-      if (e && e.target !== e.currentTarget && !e.target.classList.contains("btn-close")) return;
-      document.getElementById("subsystemModal").classList.remove("active");
-    }
-
-    async function triggerSubsystemAction(action, label) {
-      const statusEl = document.getElementById("subsystemStatStatus");
-      statusEl.innerText = "COMMAND DISPATCHED...";
-      statusEl.style.color = "var(--amber-warn)";
-
-      try {
-        await fetch(`${API_BASE}/api/subsystem/action`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: action, subsystem: currentSubsystemId, step_index: currentStep })
-        });
-      } catch (err) {
-        console.warn("Subsystem API fallback:", err);
-      }
-
-      setTimeout(() => {
-        statusEl.innerText = "COMMAND ACKNOWLEDGED (SUCCESS)";
-        statusEl.style.color = "var(--green-neon)";
-
-        if (action === "flex_curtail_all") {
-          ["toggle_drill", "toggle_lidar", "toggle_skidoo", "toggle_laundry", "toggle_sauna"].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.checked = false;
-          });
-          onOperatorToggleLoad();
-        } else if (action === "flex_restore_all") {
-          ["toggle_drill", "toggle_lidar", "toggle_skidoo", "toggle_laundry", "toggle_sauna"].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.checked = true;
-          });
-          onOperatorToggleLoad();
-        }
-
-        refreshDigitalTwin();
-      }, 400);
-    }
-
-    // ----------------------------------------------------
-    // CSV Telemetry Export Engine
-    // ----------------------------------------------------
-    function exportTelemetryCsv() {
-      const data = lastSnapshotData || generateClientDigitalTwin(currentStep);
-      const rows = [
-        ["BOREAS POLAR STATION TELEMETRY EXPORT"],
-        ["Generated At", new Date().toISOString()],
-        ["Simulation Step Index", currentStep],
-        ["Timestamp", data.timestamp],
-        [],
-        ["METRIC", "VALUE", "UNIT"],
-        ["Outdoor Temperature", data.environment.outdoor_temp_c, "°C"],
-        ["Wind Speed", data.environment.wind_speed_mps, "m/s"],
-        ["Wind Icing Factor", data.environment.wind_icing_factor, "ratio"],
-        ["Daylight Hours", data.environment.daylight_hours, "hours"],
-        ["Total Station Demand", data.energy.total_station_demand_kw, "kW"],
-        ["Critical Heating & Life Support", data.energy.critical_demand_kw, "kW"],
-        ["Flexible Science Demand", data.energy.flexible_demand_kw, "kW"],
-        ["Curtailed Flexible Load", data.energy.curtailed_flexible_kw, "kW"],
-        ["Solar PV Generation", data.energy.solar_generation_kw, "kW"],
-        ["Effective Wind Generation", data.energy.wind_effective_kw, "kW"],
-        ["Total Green Renewables", data.energy.renewables_total_kw, "kW"],
-        ["Battery Power Flow", data.energy.battery_power_kw, "kW (+ discharge / - charge)"],
-        ["Battery SoC", data.energy.battery_soc_pct, "%"],
-        ["Diesel Generation", data.energy.diesel_generation_kw, "kW"],
-        ["Hourly Fuel Consumption", data.energy.hourly_fuel_burn_liters, "L/h"],
-        ["Fuel Reserves Remaining", data.energy.diesel_fuel_reserve_liters, "Liters"],
-        ["Station Autonomy", data.risk.autonomy_days, "Days"],
-        ["Operating Mode", data.station.operating_mode, "MODE"],
-        ["Mission Risk Score", data.risk.score, "/ 100"],
-        ["Active Controller Mode", activeControllerDispatchMode.toUpperCase(), "MODE"]
-      ];
-
-      const csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `boreas_telemetry_hour_${currentStep}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-
-    // ----------------------------------------------------
-    // Google Weather API Live Ingest Modal
-    // ----------------------------------------------------
-    function openLiveWeatherModal() {
-      const msgEl = document.getElementById("gwModalStatusMsg");
-      if (msgEl) msgEl.innerText = "";
-      document.getElementById("liveWeatherModal").classList.add("active");
-    }
-
-    function closeLiveWeatherModal(e) {
-      if (e && e.target !== e.currentTarget && !e.target.classList.contains("btn-close")) return;
-      document.getElementById("liveWeatherModal").classList.remove("active");
-    }
-
-    async function runLiveWeatherIngest() {
-      const lat = parseFloat(document.getElementById("gwInputLat").value) || -78.5;
-      const lon = parseFloat(document.getElementById("gwInputLon").value) || 166.66;
-      const key = document.getElementById("gwInputKey").value.trim();
-      const msgEl = document.getElementById("gwModalStatusMsg");
-
-      msgEl.innerText = "⏳ Querying Google Weather API (v1/forecast/hours:lookup)...";
-      msgEl.style.color = "var(--cyan-neon)";
-
-      try {
-        let url = `${API_BASE}/api/weather/live?latitude=${lat}&longitude=${lon}&hours=24`;
-        if (key) url += `&api_key=${encodeURIComponent(key)}`;
-
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const result = await res.json();
-        const count = result.records_count || result.horizon_hours || (result.forecast_hours ? result.forecast_hours.length : 24);
-        const src = result.source || result.data_source || "Google Weather";
-        msgEl.innerText = `✅ Ingested ${count} hourly intervals (${src})!`;
-        msgEl.style.color = "var(--green-neon)";
-
-        setTimeout(() => {
-          closeLiveWeatherModal();
-          refreshDigitalTwin();
-          refreshForecastChart();
-        }, 1200);
-      } catch (err) {
-        console.warn("Live weather API failed, applying calibrated polar weather injection:", err);
-        msgEl.innerText = "⚡ Ingested 24-hour Antarctic Ross Ice Shelf meteorological telemetry.";
-        msgEl.style.color = "var(--cyan-neon)";
-
-        setTimeout(() => {
-          closeLiveWeatherModal();
-          refreshDigitalTwin();
-          refreshForecastChart();
-        }, 1000);
       }
     }
   </script>

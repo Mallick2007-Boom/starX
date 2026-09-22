@@ -6,8 +6,20 @@
       "destination": "/api/index.py"
     },
     {
+      "source": "/starx",
+      "destination": "/dashboard/starx.html"
+    },
+    {
+      "source": "/starx.html",
+      "destination": "/dashboard/starx.html"
+    },
+    {
+      "source": "/legacy",
+      "destination": "/legacy.html"
+    },
+    {
       "source": "/dashboard",
-      "destination": "/dashboard/index.html"
+      "destination": "/index.html"
     },
     {
       "source": "/dashboard/(.*)",

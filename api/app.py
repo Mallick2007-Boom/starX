@@ -9,6 +9,7 @@ from pathlib import Path
 import sys
 from typing import Any, Dict, List, Optional
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -34,6 +35,8 @@ from models import (
     generate_ai_decision_card,
     detect_energy_deficit_window,
     generate_decision_timeline,
+    fetch_live_google_weather,
+    run_forecast_with_weather,
 )
 
 app = FastAPI(
@@ -119,6 +122,13 @@ class LoadToggleRequest(BaseModel):
 class ScenarioRunRequest(BaseModel):
     scenario_id: str = Field("blizzard", description="Scenario ID (blizzard, diesel-failure, battery-failure, extreme-cold, low-wind, solar-reduction, high-crew, multiple-failure)")
     step_index: Optional[int] = Field(4716, description="Starting hourly step index")
+
+
+class SubsystemActionRequest(BaseModel):
+    action: str = Field(..., description="Action ID to execute")
+    subsystem: Optional[str] = Field(None, description="Target subsystem name")
+    step_index: Optional[int] = Field(4716, description="Current simulation step index")
+
 
 
 # --- API Endpoints (Dual-Mounted for /api and / paths) ---
@@ -335,6 +345,53 @@ def predict_renewables(req: PredictRenewablesRequest):
         "mean_total_renewable_kw": round(float(forecast_df["total_renewable_kw"].mean()), 2),
         "predictions": forecast_df.to_dict(orient="records"),
     }
+
+
+@app.get("/api/weather/live")
+@app.get("/weather/live")
+def get_live_weather(
+    latitude: float = Query(-78.5, description="Station latitude degrees"),
+    longitude: float = Query(166.66, description="Station longitude degrees"),
+    hours: int = Query(24, ge=1, le=168, description="Forecast horizon in hours"),
+    api_key: Optional[str] = Query(None, description="Optional Google Maps/Weather API key"),
+):
+    """Fetches live hourly weather forecast from Google Weather API (or calibrated polar fallback)."""
+    df_weather = fetch_live_google_weather(
+        latitude=latitude,
+        longitude=longitude,
+        hours=hours,
+        api_key=api_key,
+        allow_fallback=True,
+    )
+    return {
+        "status": "success",
+        "station_latitude": latitude,
+        "station_longitude": longitude,
+        "horizon_hours": len(df_weather),
+        "records_count": len(df_weather),
+        "data_source": df_weather["data_source"].iloc[0],
+        "source": df_weather["data_source"].iloc[0],
+        "forecast_hours": df_weather.to_dict(orient="records"),
+    }
+
+
+@app.get("/api/forecast/live-weather")
+@app.get("/forecast/live-weather")
+def get_forecast_from_live_weather(
+    latitude: float = Query(-78.5, description="Station latitude degrees"),
+    longitude: float = Query(166.66, description="Station longitude degrees"),
+    hours: int = Query(24, ge=1, le=168, description="Forecast horizon in hours"),
+    api_key: Optional[str] = Query(None, description="Optional Google Maps/Weather API key"),
+):
+    """Feeds live weather forecast into AI load & renewable models to generate microgrid dispatch profile."""
+    df_weather = fetch_live_google_weather(
+        latitude=latitude,
+        longitude=longitude,
+        hours=hours,
+        api_key=api_key,
+        allow_fallback=True,
+    )
+    return run_forecast_with_weather(df_weather)
 
 
 @app.get("/api/fuel/reserve-projection")
@@ -698,6 +755,37 @@ def toggle_loads_endpoint(req: LoadToggleRequest):
     }
 
 
+@app.post("/api/subsystem/action")
+@app.post("/subsystem/action")
+def execute_subsystem_action(req: SubsystemActionRequest):
+    """Executes manual operator command or diagnostic sweep on a microgrid subsystem."""
+    dt = get_digital_twin()
+    msg = f"Command '{req.action}' dispatched to {req.subsystem or 'microgrid'} subsystem."
+    # Apply direct state changes if applicable
+    if req.action == "wind_deice":
+        msg = "Electro-thermal blade de-icing active: blade heaters energized (12 kW)."
+    elif req.action == "gen_failover":
+        dt.generator_1_online = False
+        dt.generator_2_online = True
+        msg = "Automatic Transfer Switch engaged: Gen #1 shifted to Gen #2 backup."
+    elif req.action == "gen2_start":
+        dt.generator_2_online = True
+        msg = "Generator #2 auto-synchronized with station microgrid bus."
+    elif req.action == "bat_boost_heat":
+        dt.cold_battery_mode = True
+        msg = "Battery enclosure heating boosted +5°C; 30% safety floor enforced."
+
+    return {
+        "status": "SUCCESS",
+        "action": req.action,
+        "subsystem": req.subsystem,
+        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "message": msg,
+        "snapshot": dt.get_snapshot(step_index=req.step_index),
+    }
+
+
+
 @app.get("/api/comparison/baseline")
 @app.get("/comparison/baseline")
 def get_comparison_baseline():
@@ -738,11 +826,47 @@ def get_comparison_boreas():
 
 # Mount dashboard static directory if it exists
 DASHBOARD_DIR = project_root / "dashboard"
+
+@app.get("/")
+@app.get("/index.html")
+def get_original_dashboard():
+    """Serves the original BOREAS Polar Station AI Microgrid website."""
+    index_path = DASHBOARD_DIR / "index.html"
+    return FileResponse(
+        str(index_path),
+        media_type="text/html",
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        },
+    )
+
+
+@app.get("/starx")
+@app.get("/starx.html")
+def get_starx_dashboard():
+    """Serves the STAR-X autonomous command center."""
+    starx_path = DASHBOARD_DIR / "starx.html"
+    return FileResponse(
+        str(starx_path),
+        media_type="text/html",
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        },
+    )
+
+
 if DASHBOARD_DIR.exists():
     app.mount("/", StaticFiles(directory=str(DASHBOARD_DIR), html=True), name="dashboard")
 
 
 if __name__ == "__main__":
     import uvicorn
-    print("Starting Boreas Polar Station AI Microgrid API & Dashboard on http://localhost:8000")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import os
+    port = int(os.environ.get("PORT", 8000))
+    print(f"Starting Boreas Polar Station AI Microgrid API & Dashboard on http://0.0.0.0:{port}")
+    uvicorn.run(app, host="0.0.0.0", port=port)
+
