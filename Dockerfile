@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 # Prevent Python from writing .pyc files & enable unbuffered stdout
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -24,9 +24,5 @@ COPY . .
 # Expose default port
 EXPOSE 8000
 
-# Health check using the /health endpoint
-HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
-    CMD curl -f http://localhost:${PORT}/health || exit 1
-
 # Launch FastAPI microgrid server
-CMD ["sh", "-c", "uvicorn api.app:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["python", "api/app.py"]
